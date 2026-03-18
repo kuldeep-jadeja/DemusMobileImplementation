@@ -20,7 +20,8 @@
     "requireReviews": false,
     "autoRollback": true,
     "gitCommitOnComplete": true,
-    "atomicPhaseCommits": true
+    "atomicPhaseCommits": true,
+    "_auto_chain_active": false
   },
   "phases": {
     "maxConcurrent": 2,
@@ -37,7 +38,10 @@
     "build": "dist"
   },
   "platforms": {
-    "targets": ["ios", "android"],
+    "targets": [
+      "ios",
+      "android"
+    ],
     "minIOSVersion": "14.0",
     "minAndroidVersion": 28,
     "appName": "Demus",
@@ -49,7 +53,10 @@
       "enabled": true,
       "threshold": 80
     },
-    "platforms": ["ios", "android"]
+    "platforms": [
+      "ios",
+      "android"
+    ]
   },
   "performance": {
     "budgets": {
