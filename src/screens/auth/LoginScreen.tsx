@@ -3,12 +3,15 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { useGoogleOAuth, useAppleOAuth } from '../../hooks/useOAuth';
 
 export const LoginScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { promptAsync: promptGoogleAsync, ready: googleReady } = useGoogleOAuth();
+  const { promptAsync: promptAppleAsync, ready: appleReady } = useAppleOAuth();
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -52,6 +55,28 @@ export const LoginScreen = ({ navigation }: any) => {
         title={loading ? 'Signing in...' : 'Sign In'}
         onPress={handleLogin}
         disabled={loading}
+      />
+
+      <View style={styles.divider}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>OR</Text>
+        <View style={styles.dividerLine} />
+      </View>
+
+      <Button
+        title="Continue with Google"
+        onPress={() => promptGoogleAsync()}
+        variant="outline"
+        disabled={!googleReady}
+        style={styles.oauthButton}
+      />
+
+      <Button
+        title="Continue with Apple"
+        onPress={() => promptAppleAsync()}
+        variant="outline"
+        disabled={!appleReady}
+        style={styles.oauthButton}
       />
 
       <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
@@ -105,5 +130,23 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontSize: 14,
     fontWeight: '600',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#ddd',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: '#666',
+    fontSize: 14,
+  },
+  oauthButton: {
+    marginBottom: 12,
   },
 });

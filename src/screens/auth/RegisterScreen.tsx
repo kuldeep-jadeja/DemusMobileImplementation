@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useAuth } from '../../context/AuthContext';
 import { Button } from '../../components/Button';
 import { Input } from '../../components/Input';
+import { useGoogleOAuth, useAppleOAuth } from '../../hooks/useOAuth';
 
 export const RegisterScreen = ({ navigation }: any) => {
   const [email, setEmail] = useState('');
@@ -10,6 +11,8 @@ export const RegisterScreen = ({ navigation }: any) => {
   const [displayName, setDisplayName] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
+  const { promptAsync: promptGoogleAsync, ready: googleReady } = useGoogleOAuth();
+  const { promptAsync: promptAppleAsync, ready: appleReady } = useAppleOAuth();
 
   const handleRegister = async () => {
     if (!email || !password || !displayName) {
@@ -67,6 +70,28 @@ export const RegisterScreen = ({ navigation }: any) => {
         disabled={loading}
       />
 
+      <View style={styles.divider}>
+        <View style={styles.dividerLine} />
+        <Text style={styles.dividerText}>OR</Text>
+        <View style={styles.dividerLine} />
+      </View>
+
+      <Button
+        title="Continue with Google"
+        onPress={() => promptGoogleAsync()}
+        variant="outline"
+        disabled={!googleReady}
+        style={styles.oauthButton}
+      />
+
+      <Button
+        title="Continue with Apple"
+        onPress={() => promptAppleAsync()}
+        variant="outline"
+        disabled={!appleReady}
+        style={styles.oauthButton}
+      />
+
       <View style={styles.footer}>
         <Text style={styles.footerText}>Already have an account? </Text>
         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
@@ -108,5 +133,23 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontSize: 14,
     fontWeight: '600',
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#ddd',
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: '#666',
+    fontSize: 14,
+  },
+  oauthButton: {
+    marginBottom: 12,
   },
 });
