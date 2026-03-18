@@ -1,0 +1,84 @@
+{
+  "project": {
+    "name": "Demus Mobile Implementation",
+    "version": "1.0.0",
+    "description": "Cross-platform music streaming mobile application",
+    "baseDir": "C:\\Users\\Admin\\Desktop\\Pro-Music-App\\DemusMobileImplementation"
+  },
+  "gsd": {
+    "mode": "YOLO",
+    "autoExecute": true,
+    "parallelPhases": true,
+    "atomicCommits": true,
+    "checkpointInterval": 5,
+    "maxTokensPerPhase": 100000,
+    "agentProfile": "balanced"
+  },
+  "workflow": {
+    "requirePlans": true,
+    "requireTests": true,
+    "requireReviews": false,
+    "autoRollback": true,
+    "gitCommitOnComplete": true,
+    "atomicPhaseCommits": true
+  },
+  "phases": {
+    "maxConcurrent": 2,
+    "timeoutMinutes": 120,
+    "retryFailedTasks": true,
+    "maxRetries": 2
+  },
+  "directories": {
+    "planning": ".planning",
+    "phases": ".planning/phases",
+    "research": ".planning/research",
+    "source": "src",
+    "tests": "tests",
+    "build": "dist"
+  },
+  "platforms": {
+    "targets": ["ios", "android"],
+    "minIOSVersion": "14.0",
+    "minAndroidVersion": 28,
+    "appName": "Demus",
+    "bundleId": "com.demus.music"
+  },
+  "testing": {
+    "framework": "jest",
+    "coverage": {
+      "enabled": true,
+      "threshold": 80
+    },
+    "platforms": ["ios", "android"]
+  },
+  "performance": {
+    "budgets": {
+      "appLaunchMs": 2000,
+      "musicStartMs": 1000,
+      "apiResponseP95Ms": 1000,
+      "searchResponseMs": 300
+    },
+    "frameRateTargets": {
+      "ios": 60,
+      "android": 90
+    }
+  },
+  "build": {
+    "ios": {
+      "scheme": "Demus",
+      "configuration": "Release",
+      "maxSize": 157286400
+    },
+    "android": {
+      "flavor": "prod",
+      "maxSize": 209715200
+    }
+  },
+  "notifications": {
+    "enabled": true,
+    "slack": false,
+    "email": true,
+    "onPhaseComplete": true,
+    "onPhaseFailure": true
+  }
+}

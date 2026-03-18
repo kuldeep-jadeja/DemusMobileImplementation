@@ -1,0 +1,854 @@
+#!/usr/bin/env python3
+"""
+Plan 01-03: UI Screens & Navigation - Complete Setup Script
+Creates AuthContext, navigation, auth screens, and UI components
+"""
+
+import os
+import json
+
+def create_directory(path):
+    """Create directory if it doesn't exist"""
+    if not os.path.exists(path):
+        os.makedirs(path)
+        print(f"✓ Created directory: {path}")
+    else:
+        print(f"  Directory exists: {path}")
+
+def write_file(path, content):
+    """Write content to file"""
+    directory = os.path.dirname(path)
+    if directory:
+        create_directory(directory)
+    
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(content)
+    print(f"✓ Created file: {path}")
+
+def main():
+    print("=" * 60)
+    print("Plan 01-03: UI Screens & Navigation Setup")
+    print("=" * 60)
+    print()
+
+    # Task 1: Auth Context & Navigation
+    print("[Task 1] Creating Auth Context & Navigation...")
+    
+    auth_context = '''import React, { createContext, useState, useContext, useEffect } from 'react';
+import { authService } from '../services/authService';
+import type { User } from '../types/user';
+
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, displayName: string) => Promise<void>;
+  logout: () => Promise<void>;
+  refreshSession: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      const existingUser = await authService.checkSession();
+      setUser(existingUser);
+    } catch (error) {
+      console.error('Session check failed:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const login = async (email: string, password: string) => {
+    const userData = await authService.login(email, password);
+    setUser(userData);
+  };
+
+  const register = async (email: string, password: string, displayName: string) => {
+    const userData = await authService.register(email, password, displayName);
+    setUser(userData);
+  };
+
+  const logout = async () => {
+    await authService.logout();
+    setUser(null);
+  };
+
+  const refreshSession = async () => {
+    await authService.refreshToken();
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, refreshSession }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+};
+'''
+    write_file('src/context/AuthContext.tsx', auth_context)
+
+    use_auth_hook = '''export { useAuth } from '../context/AuthContext';
+'''
+    write_file('src/hooks/useAuth.ts', use_auth_hook)
+
+    app_navigator = '''import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useAuth } from '../hooks/useAuth';
+import { ActivityIndicator, View } from 'react-native';
+
+import LoginScreen from '../screens/auth/LoginScreen';
+import RegisterScreen from '../screens/auth/RegisterScreen';
+import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
+import HomeScreen from '../screens/home/HomeScreen';
+import ProfileScreen from '../screens/auth/ProfileScreen';
+import ChangePasswordScreen from '../screens/auth/ChangePasswordScreen';
+
+const Stack = createNativeStackNavigator();
+
+export const AppNavigator = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      {user ? (
+        <Stack.Navigator>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+        </Stack.Navigator>
+      ) : (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+        </Stack.Navigator>
+      )}
+    </NavigationContainer>
+  );
+};
+'''
+    write_file('src/navigation/AppNavigator.tsx', app_navigator)
+
+    app_tsx = '''import React from 'react';
+import { AuthProvider } from './src/context/AuthContext';
+import { AppNavigator } from './src/navigation/AppNavigator';
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppNavigator />
+    </AuthProvider>
+  );
+}
+'''
+    write_file('App.tsx', app_tsx)
+
+    # Task 2: UI Components
+    print("\n[Task 2] Creating UI Components...")
+    
+    button_component = '''import React from 'react';
+import {
+  TouchableOpacity,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
+
+interface ButtonProps {
+  title: string;
+  onPress: () => void;
+  loading?: boolean;
+  variant?: 'primary' | 'outline';
+  disabled?: boolean;
+  style?: ViewStyle;
+}
+
+export const Button: React.FC<ButtonProps> = ({
+  title,
+  onPress,
+  loading = false,
+  variant = 'primary',
+  disabled = false,
+  style,
+}) => {
+  return (
+    <TouchableOpacity
+      style={[
+        styles.button,
+        variant === 'outline' && styles.buttonOutline,
+        disabled && styles.buttonDisabled,
+        style,
+      ]}
+      onPress={onPress}
+      disabled={disabled || loading}
+    >
+      {loading ? (
+        <ActivityIndicator color={variant === 'primary' ? '#fff' : '#007AFF'} />
+      ) : (
+        <Text
+          style={[
+            styles.buttonText,
+            variant === 'outline' && styles.buttonTextOutline,
+          ]}
+        >
+          {title}
+        </Text>
+      )}
+    </TouchableOpacity>
+  );
+};
+
+const styles = StyleSheet.create({
+  button: {
+    backgroundColor: '#007AFF',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+  },
+  buttonOutline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  buttonDisabled: {
+    opacity: 0.5,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  buttonTextOutline: {
+    color: '#007AFF',
+  },
+});
+'''
+    write_file('src/components/Button.tsx', button_component)
+
+    input_component = '''import React from 'react';
+import { TextInput, View, Text, StyleSheet, TextInputProps } from 'react-native';
+
+interface InputProps extends TextInputProps {
+  label?: string;
+  error?: string;
+}
+
+export const Input: React.FC<InputProps> = ({ label, error, style, ...props }) => {
+  return (
+    <View style={styles.container}>
+      {label && <Text style={styles.label}>{label}</Text>}
+      <TextInput
+        style={[styles.input, error && styles.inputError, style]}
+        placeholderTextColor="#999"
+        {...props}
+      />
+      {error && <Text style={styles.errorText}>{error}</Text>}
+    </View>
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '500',
+    marginBottom: 8,
+    color: '#333',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
+  inputError: {
+    borderColor: '#ff3b30',
+  },
+  errorText: {
+    color: '#ff3b30',
+    fontSize: 12,
+    marginTop: 4,
+  },
+});
+'''
+    write_file('src/components/Input.tsx', input_component)
+
+    # Task 3: Authentication Screens
+    print("\n[Task 3] Creating Authentication Screens...")
+    
+    login_screen = '''import React, { useState } from 'react';
+import { View, StyleSheet, Alert, Text, TouchableOpacity } from 'react-native';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useAuth } from '../../hooks/useAuth';
+import { Button } from '../../components/Button';
+import { Input } from '../../components/Input';
+
+const loginSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
+
+export default function LoginScreen({ navigation }: any) {
+  const { login } = useAuth();
+  const [loading, setLoading] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setLoading(true);
+    try {
+      await login(data.email, data.password);
+    } catch (error: any) {
+      Alert.alert('Login Failed', error.message || 'Invalid email or password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Welcome to Demus</Text>
+
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="Email"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            error={errors.email?.message}
+          />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="password"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="Password"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            secureTextEntry
+            error={errors.password?.message}
+          />
+        )}
+      />
+
+      <Button
+        title="Login"
+        onPress={handleSubmit(onSubmit)}
+        loading={loading}
+        style={styles.button}
+      />
+
+      <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+        <Text style={styles.link}>Forgot Password?</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.link}>Don't have an account? Sign up</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 32,
+    textAlign: 'center',
+  },
+  button: {
+    marginTop: 8,
+  },
+  link: {
+    color: '#007AFF',
+    textAlign: 'center',
+    marginTop: 16,
+  },
+});
+'''
+    write_file('src/screens/auth/LoginScreen.tsx', login_screen)
+
+    register_screen = '''import React, { useState } from 'react';
+import { View, StyleSheet, Alert, Text, TouchableOpacity } from 'react-native';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useAuth } from '../../hooks/useAuth';
+import { Button } from '../../components/Button';
+import { Input } from '../../components/Input';
+
+const registerSchema = z.object({
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  displayName: z.string().min(2, 'Name must be at least 2 characters'),
+});
+
+type RegisterFormData = z.infer<typeof registerSchema>;
+
+export default function RegisterScreen({ navigation }: any) {
+  const { register } = useAuth();
+  const [loading, setLoading] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const onSubmit = async (data: RegisterFormData) => {
+    setLoading(true);
+    try {
+      await register(data.email, data.password, data.displayName);
+    } catch (error: any) {
+      Alert.alert('Registration Failed', error.message || 'Please try again');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Create Account</Text>
+
+      <Controller
+        control={control}
+        name="displayName"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="Display Name"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            error={errors.displayName?.message}
+          />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="Email"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            error={errors.email?.message}
+          />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="password"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="Password"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            secureTextEntry
+            error={errors.password?.message}
+          />
+        )}
+      />
+
+      <Button
+        title="Sign Up"
+        onPress={handleSubmit(onSubmit)}
+        loading={loading}
+        style={styles.button}
+      />
+
+      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+        <Text style={styles.link}>Already have an account? Log in</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 32,
+    textAlign: 'center',
+  },
+  button: {
+    marginTop: 8,
+  },
+  link: {
+    color: '#007AFF',
+    textAlign: 'center',
+    marginTop: 16,
+  },
+});
+'''
+    write_file('src/screens/auth/RegisterScreen.tsx', register_screen)
+
+    profile_screen = '''import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { useAuth } from '../../hooks/useAuth';
+import { Button } from '../../components/Button';
+
+export default function ProfileScreen({ navigation }: any) {
+  const { user, logout } = useAuth();
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Profile</Text>
+      <Text style={styles.label}>Name: {user?.displayName}</Text>
+      <Text style={styles.label}>Email: {user?.email}</Text>
+      
+      <Button
+        title="Change Password"
+        onPress={() => navigation.navigate('ChangePassword')}
+        variant="outline"
+        style={styles.button}
+      />
+      
+      <Button
+        title="Logout"
+        onPress={logout}
+        style={styles.button}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 24, backgroundColor: '#fff' },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 24 },
+  label: { fontSize: 16, marginBottom: 12 },
+  button: { marginTop: 16 },
+});
+'''
+    write_file('src/screens/auth/ProfileScreen.tsx', profile_screen)
+
+    forgot_password_screen = '''import React, { useState } from 'react';
+import { View, StyleSheet, Alert, Text } from 'react-native';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { authService } from '../../services/authService';
+import { Button } from '../../components/Button';
+import { Input } from '../../components/Input';
+
+const forgotPasswordSchema = z.object({
+  email: z.string().email('Invalid email address'),
+});
+
+type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
+
+export default function ForgotPasswordScreen({ navigation }: any) {
+  const [loading, setLoading] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+  });
+
+  const onSubmit = async (data: ForgotPasswordFormData) => {
+    setLoading(true);
+    try {
+      await authService.requestPasswordReset(data.email);
+      Alert.alert(
+        'Success',
+        'Password reset instructions sent to your email',
+        [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+      );
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to send reset email');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Reset Password</Text>
+      <Text style={styles.subtitle}>
+        Enter your email and we'll send you instructions to reset your password
+      </Text>
+
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="Email"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            error={errors.email?.message}
+          />
+        )}
+      />
+
+      <Button
+        title="Send Reset Link"
+        onPress={handleSubmit(onSubmit)}
+        loading={loading}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 32,
+    textAlign: 'center',
+  },
+});
+'''
+    write_file('src/screens/auth/ForgotPasswordScreen.tsx', forgot_password_screen)
+
+    change_password_screen = '''import React, { useState } from 'react';
+import { View, StyleSheet, Alert, Text } from 'react-native';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { authService } from '../../services/authService';
+import { Button } from '../../components/Button';
+import { Input } from '../../components/Input';
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(8, 'Password must be at least 8 characters'),
+  newPassword: z.string().min(8, 'Password must be at least 8 characters'),
+});
+
+type ChangePasswordFormData = z.infer<typeof changePasswordSchema>;
+
+export default function ChangePasswordScreen({ navigation }: any) {
+  const [loading, setLoading] = useState(false);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<ChangePasswordFormData>({
+    resolver: zodResolver(changePasswordSchema),
+  });
+
+  const onSubmit = async (data: ChangePasswordFormData) => {
+    setLoading(true);
+    try {
+      await authService.changePassword(data.currentPassword, data.newPassword);
+      Alert.alert('Success', 'Password changed successfully', [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to change password');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Change Password</Text>
+
+      <Controller
+        control={control}
+        name="currentPassword"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="Current Password"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            secureTextEntry
+            error={errors.currentPassword?.message}
+          />
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="newPassword"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <Input
+            label="New Password"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            secureTextEntry
+            error={errors.newPassword?.message}
+          />
+        )}
+      />
+
+      <Button
+        title="Change Password"
+        onPress={handleSubmit(onSubmit)}
+        loading={loading}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 24, backgroundColor: '#fff' },
+  title: { fontSize: 28, fontWeight: 'bold', marginBottom: 32 },
+});
+'''
+    write_file('src/screens/auth/ChangePasswordScreen.tsx', change_password_screen)
+
+    home_screen = '''import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+import { Button } from '../../components/Button';
+
+export default function HomeScreen({ navigation }: any) {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Home</Text>
+      <Text style={styles.subtitle}>Authentication successful!</Text>
+      <Button
+        title="View Profile"
+        onPress={() => navigation.navigate('Profile')}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  title: { fontSize: 32, fontWeight: 'bold', marginBottom: 16 },
+  subtitle: { fontSize: 16, color: '#666', marginBottom: 32 },
+});
+'''
+    write_file('src/screens/home/HomeScreen.tsx', home_screen)
+
+    # Summary
+    print("\n" + "=" * 60)
+    print("Setup Complete!")
+    print("=" * 60)
+    print("\nFiles Created:")
+    print("  ✓ src/context/AuthContext.tsx")
+    print("  ✓ src/hooks/useAuth.ts")
+    print("  ✓ src/navigation/AppNavigator.tsx")
+    print("  ✓ src/components/Button.tsx")
+    print("  ✓ src/components/Input.tsx")
+    print("  ✓ src/screens/auth/LoginScreen.tsx")
+    print("  ✓ src/screens/auth/RegisterScreen.tsx")
+    print("  ✓ src/screens/auth/ProfileScreen.tsx")
+    print("  ✓ src/screens/auth/ForgotPasswordScreen.tsx")
+    print("  ✓ src/screens/auth/ChangePasswordScreen.tsx")
+    print("  ✓ src/screens/home/HomeScreen.tsx")
+    print("  ✓ App.tsx (updated)")
+    print("\nNext Steps:")
+    print("  1. Run TypeScript compiler check:")
+    print("     npx tsc --noEmit")
+    print("  2. Test the app:")
+    print("     npm start")
+    print("  3. Git commit:")
+    print("     git add .")
+    print("     git commit -m \"feat(01-03): implement UI screens and navigation\"")
+    print("\nPlan 01-03 ready!")
+
+if __name__ == '__main__':
+    main()
