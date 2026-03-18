@@ -1,0 +1,1 @@
+Placeholder for asset files (icon.png, splash.png, etc.)
