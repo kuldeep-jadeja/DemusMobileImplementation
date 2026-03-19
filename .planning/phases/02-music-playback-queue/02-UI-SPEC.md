@@ -53,15 +53,17 @@ Declared values (multiples of 4):
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 16px | 400 (regular) | 1.5 (24px) |
-| Label | 14px | 500 (medium) | 1.4 (20px) |
+| Label | 14px | 400 (regular) | 1.4 (20px) |
 | Track Title | 20px | 600 (semibold) | 1.3 (26px) |
 | Artist Name | 14px | 400 (regular) | 1.4 (20px) |
-| Queue Item | 14px | 500 (medium) | 1.4 (20px) |
+| Queue Item | 14px | 400 (regular) | 1.4 (20px) |
 | Playback Time | 12px | 400 (regular) | 1.3 (16px) |
+
+**Font Weights:** 400 (regular), 600 (semibold)
 
 **New additions for Phase 2:**
 - **20px Track Title:** Added for prominent track display in player
-- **400 regular weight:** Added for artist names and timestamps (Phase 1 only had 500, 600)
+- **400 regular weight:** Added for artist names and timestamps (Phase 1 only had 600)
 
 **Source:** User decisions + Phase 1 baseline (12px, 14px, 16px already established)
 
@@ -346,7 +348,7 @@ Declared values (multiples of 4):
 | Source | Decisions Used | Count |
 |--------|---------------|-------|
 | User Decisions | Color palette, typography additions, spacing, copywriting, interaction patterns | 15 |
-| Phase 1 Baseline | Existing colors (#007AFF, #ff3b30), spacing (8px, 16px, 24px), font sizes (12px, 14px, 16px), weights (500, 600) | 10 |
+| Phase 1 Baseline | Existing colors (#007AFF, #ff3b30), spacing (8px, 16px, 24px), font sizes (12px, 14px, 16px), weight (600) | 10 |
 | REQUIREMENTS.md | US-PLAY-001 (playback controls), US-PLAY-002 (queue management), US-PLAY-003 (shuffle/repeat) | 3 |
 | ROADMAP.md | Background playback, lock screen controls, queue handling >1000 tracks | 3 |
 | Expo/React Native defaults | @expo/vector-icons, system fonts, StyleSheet API, FlatList patterns | 4 |
@@ -363,7 +365,7 @@ This is a React Native mobile application, not a web app. shadcn/ui and web-base
 
 **Consistency with Phase 1:**
 - Reuses existing color palette (#007AFF primary, #ff3b30 destructive)
-- Extends typography with two new specifications (20px/600 for track titles, 400 weight for body)
+- Extends typography with two specifications: 20px/600 for track titles, 400 regular weight for body text (Phase 1 only used 600 semibold)
 - Maintains 8px spacing grid established in Phase 1
 - Continues pattern of icon-only buttons (established in auth screens)
 
