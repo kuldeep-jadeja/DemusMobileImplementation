@@ -64,26 +64,28 @@
 ### Phase 2: Music Playback & Queue (Weeks 4-6)
 **Goal:** Implement core music streaming and playback functionality
 
+**Plans:** 4 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Install RNTP, create TrackPlayerService and types
+- [ ] 02-02-PLAN.md — Create PlaybackContext and service layer (PlaybackService, QueueService)
+- [ ] 02-03-PLAN.md — Build player UI components (MusicPlayer, MiniPlayer, controls)
+- [ ] 02-04-PLAN.md — Create queue UI and integration tests + manual QA checkpoint
+
 #### Key Deliverables
 - [ ] Music player UI component
-- [ ] Audio playback engine
+- [ ] Audio playback engine (react-native-track-player 4.1.2)
 - [ ] Queue management system
 - [ ] Playback controls (play/pause, next, prev, seek)
 - [ ] Shuffle and repeat modes
-- [ ] Playback speed controls
-- [ ] Music streaming integration
+- [ ] Mini player for background playback
+- [ ] Lock screen playback controls
 
-#### Tasks
-1. Design and implement music player UI
-2. Integrate native audio playback (iOS AVPlayer, Android ExoPlayer)
-3. Implement queue data structure and management
-4. Add playback control handlers
-5. Implement shuffle and repeat logic
-6. Add playback speed controls
-7. Create mini player for background playback
-8. Implement audio focus management
-9. Add lock screen playback controls
-10. Implement media session integration
+#### Wave Structure
+- **Wave 1:** Plan 02-01 (RNTP setup, dev build)
+- **Wave 2:** Plan 02-02 (Context + services)
+- **Wave 3:** Plan 02-03 (Player UI)
+- **Wave 4:** Plan 02-04 (Queue UI + QA)
 
 #### Success Criteria
 - ✓ Audio plays within 1 second of track selection
@@ -93,11 +95,22 @@
 - ✓ Background playback functions when app closed
 - ✓ Lock screen controls work on both platforms
 
+#### Requirements Coverage
+- US-PLAY-001: Play Individual Track (Plans 02-01, 02-02, 02-03)
+- US-PLAY-002: Queue Management (Plans 02-02, 02-04)
+- US-PLAY-003: Playback Controls (Plans 02-02, 02-03, 02-04)
+
 #### Dependencies
 - Phase 1: Authentication (user session required)
 
+#### Technical Stack
+- react-native-track-player 4.1.2
+- expo-haptics (UI feedback)
+- @react-native-async-storage/async-storage (queue persistence)
+- PlaybackContext (React Context API)
+
 #### Estimated Effort
-- 45-55 engineer-days
+- 45-55 engineer-days → 4 plans (12-15 hours executor time)
 
 ---
 
