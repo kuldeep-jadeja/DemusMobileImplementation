@@ -30,8 +30,10 @@ const mockTrack2 = { id: '2', title: 'Track 2', artist: 'Artist', url: 'http://2
 const mockTrack3 = { id: '3', title: 'Track 3', artist: 'Artist', url: 'http://3.mp3', duration: 220000 };
 
 describe('QueueService', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     jest.clearAllMocks();
+    // Reset module state between tests
+    await QueueService.clearQueue();
   });
 
   describe('setQueue', () => {
