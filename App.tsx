@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { AuthProvider } from './src/context/AuthContext';
+import { PlaybackProvider } from './src/contexts/PlaybackContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { setupTrackPlayer } from './src/services/audio/TrackPlayerService';
 
@@ -33,9 +34,11 @@ export default function App() {
   }
 
   return (
-    <AuthProvider>
-      <AppNavigator />
-    </AuthProvider>
+    <PlaybackProvider>
+      <AuthProvider>
+        <AppNavigator />
+      </AuthProvider>
+    </PlaybackProvider>
   );
 }
 
