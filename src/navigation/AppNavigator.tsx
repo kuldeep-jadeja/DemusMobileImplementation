@@ -11,6 +11,7 @@ import HomeScreen from '../screens/home/HomeScreen';
 import ProfileScreen from '../screens/auth/ProfileScreen';
 import ChangePasswordScreen from '../screens/auth/ChangePasswordScreen';
 import { PlayerScreen } from '../screens/PlayerScreen';
+import { QueueScreen } from '../screens/QueueScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -38,6 +39,13 @@ export const AppNavigator = () => {
             options={{
               title: 'Now Playing',
               presentation: 'modal',
+            }}
+          />
+          <Stack.Screen 
+            name="Queue" 
+            component={QueueScreen}
+            options={{
+              title: 'Queue',
             }}
           />
         </Stack.Navigator>
