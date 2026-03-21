@@ -10,6 +10,7 @@ import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import HomeScreen from '../screens/home/HomeScreen';
 import ProfileScreen from '../screens/auth/ProfileScreen';
 import ChangePasswordScreen from '../screens/auth/ChangePasswordScreen';
+import { PlayerScreen } from '../screens/PlayerScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,14 @@ export const AppNavigator = () => {
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+          <Stack.Screen 
+            name="Player" 
+            component={PlayerScreen}
+            options={{
+              title: 'Now Playing',
+              presentation: 'modal',
+            }}
+          />
         </Stack.Navigator>
       ) : (
         <Stack.Navigator screenOptions={{ headerShown: false }}>
