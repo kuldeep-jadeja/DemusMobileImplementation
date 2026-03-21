@@ -13,9 +13,19 @@ jest.mock('expo-auth-session', () => ({}));
 // Mock expo-web-browser
 jest.mock('expo-web-browser', () => ({}));
 
+// Mock expo-haptics
+jest.mock('expo-haptics', () => ({
+  impactAsync: jest.fn(),
+  ImpactFeedbackStyle: {
+    Light: 'light',
+    Medium: 'medium',
+    Heavy: 'heavy',
+  },
+}), { virtual: true });
+
 // Mock react-native-track-player
-jest.mock('react-native-track-player', () => ({
-  default: {
+jest.mock('react-native-track-player', () => {
+  const mockPlayer = {
     setupPlayer: jest.fn().mockResolvedValue(undefined),
     destroy: jest.fn().mockResolvedValue(undefined),
     updateOptions: jest.fn().mockResolvedValue(undefined),
@@ -35,22 +45,27 @@ jest.mock('react-native-track-player', () => ({
     getTrack: jest.fn().mockResolvedValue(null),
     getQueue: jest.fn().mockResolvedValue([]),
     setRepeatMode: jest.fn().mockResolvedValue(undefined),
-  },
-  useProgress: jest.fn(() => ({ position: 0, duration: 0 })),
-  usePlaybackState: jest.fn(() => ({ state: 'idle' })),
-  useTrackPlayerEvents: jest.fn(),
-  Event: {
-    PlaybackTrackChanged: 'playback-track-changed',
-    PlaybackQueueEnded: 'playback-queue-ended',
-  },
-  State: {
-    Playing: 'playing',
-    Paused: 'paused',
-    Buffering: 'buffering',
-    Loading: 'loading',
-    Idle: 'idle',
-  },
-}));
+  };
+  
+  return {
+    __esModule: true,
+    default: mockPlayer,
+    useProgress: jest.fn(() => ({ position: 0, duration: 0 })),
+    usePlaybackState: jest.fn(() => ({ state: 'idle' })),
+    useTrackPlayerEvents: jest.fn(),
+    Event: {
+      PlaybackTrackChanged: 'playback-track-changed',
+      PlaybackQueueEnded: 'playback-queue-ended',
+    },
+    State: {
+      Playing: 'playing',
+      Paused: 'paused',
+      Buffering: 'buffering',
+      Loading: 'loading',
+      Idle: 'idle',
+    },
+  };
+}, { virtual: true });
 
 // Silence console errors in tests
 global.console = {
