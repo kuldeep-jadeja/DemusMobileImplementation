@@ -1,5 +1,16 @@
 import '@testing-library/jest-native/extend-expect';
 
+// Mock @react-native-async-storage/async-storage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  __esModule: true,
+  default: {
+    setItem: jest.fn(() => Promise.resolve()),
+    getItem: jest.fn(() => Promise.resolve(null)),
+    removeItem: jest.fn(() => Promise.resolve()),
+    clear: jest.fn(() => Promise.resolve()),
+  },
+}));
+
 // Mock expo-secure-store with plain implementation
 jest.mock('expo-secure-store', () => ({
   setItemAsync: () => Promise.resolve(),
@@ -53,6 +64,13 @@ jest.mock('react-native-track-player', () => {
     useProgress: jest.fn(() => ({ position: 0, duration: 0 })),
     usePlaybackState: jest.fn(() => ({ state: 'idle' })),
     useTrackPlayerEvents: jest.fn(),
+    Capability: {
+      Play: 'play',
+      Pause: 'pause',
+      SkipToNext: 'skip-to-next',
+      SkipToPrevious: 'skip-to-previous',
+      SeekTo: 'seek-to',
+    },
     Event: {
       PlaybackTrackChanged: 'playback-track-changed',
       PlaybackQueueEnded: 'playback-queue-ended',
