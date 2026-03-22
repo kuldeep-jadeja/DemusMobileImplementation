@@ -40,3 +40,42 @@ export type PlaybackState = {
   isPlaying: boolean;
   isLoading: boolean;
 };
+
+/**
+ * Playlist status during import process
+ */
+export type PlaylistStatus = 'imported' | 'matching' | 'ready' | 'paused' | 'error';
+
+/**
+ * Playlist model (user's library)
+ */
+export type Playlist = {
+  id: string;
+  name: string;
+  description?: string;
+  coverImage?: string;
+  owner?: string;
+  trackCount: number;
+  status: PlaylistStatus;
+  importProgress: number;  // 0-100
+  spotifyPlaylistId?: string;
+  tracks?: ApiTrack[];     // Populated only in detail view
+  retryAfter?: string;     // ISO date string
+  errorMessage?: string;
+  createdAt?: string;      // ISO date string
+};
+
+/**
+ * Track model from API (before conversion to playback Track)
+ */
+export type ApiTrack = {
+  id: string;
+  spotifyId: string;
+  name: string;
+  artists: string[];
+  album: string;
+  duration: number;        // Milliseconds
+  youtubeVideoId: string | null;
+  albumImage?: string;
+  importedAt?: string;     // ISO date string
+};

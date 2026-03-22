@@ -58,6 +58,74 @@ export async function addToQueue(track: Track): Promise<void> {
 }
 
 /**
+ * Add multiple tracks to end of queue.
+ * In Expo Go, updates state only (no audio).
+ */
+export async function addTracks(tracks: Track[]): Promise<void> {
+  try {
+    originalQueue.push(...tracks);
+    currentQueue.push(...tracks);
+    
+    if (!isExpoGo) {
+      await TrackPlayer.add(tracks);
+    }
+    
+    await saveQueueToStorage();
+  } catch (error) {
+    console.error('Add tracks to queue failed:', error);
+    throw error;
+  }
+}
+
+/**
+ * Play a single track immediately, optionally with a context queue.
+ * If contextQueue is provided, replaces entire queue and plays the track.
+ * If no contextQueue, adds track as next and plays it.
+ */
+export async function playTrack(track: Track, contextQueue?: Track[]): Promise<void> {
+  try {
+    if (contextQueue && contextQueue.length > 0) {
+      // Find the track index in context queue
+      const trackIndex = contextQueue.findIndex(t => t.id === track.id);
+      if (trackIndex >= 0) {
+        // Set the entire queue and play from the track's position
+        originalQueue = [...contextQueue];
+        currentQueue = shuffleEnabled ? shuffleArray([...contextQueue]) : [...contextQueue];
+        
+        if (!isExpoGo) {
+          await TrackPlayer.reset();
+          await TrackPlayer.add(currentQueue);
+          
+          // Find track position after shuffle
+          const playIndex = currentQueue.findIndex(t => t.id === track.id);
+          await TrackPlayer.skip(playIndex >= 0 ? playIndex : 0);
+          await TrackPlayer.play();
+        }
+      } else {
+        // Track not in context, just add it and play
+        await setQueue([track, ...contextQueue]);
+      }
+    } else {
+      // No context queue - just play this track immediately
+      originalQueue = [track];
+      currentQueue = [track];
+      
+      if (!isExpoGo) {
+        await TrackPlayer.reset();
+        await TrackPlayer.add(track);
+        await TrackPlayer.skip(0);
+        await TrackPlayer.play();
+      }
+    }
+    
+    await saveQueueToStorage();
+  } catch (error) {
+    console.error('Play track failed:', error);
+    throw error;
+  }
+}
+
+/**
  * Remove track from queue by index.
  * If removing current track, skips to next.
  * In Expo Go, updates state only (no audio).
