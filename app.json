@@ -4,6 +4,7 @@
     "slug": "demus-mobile",
     "scheme": "demus",
     "version": "1.0.0",
+    "sdkVersion": "51.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -51,6 +52,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "57d74c87-32a3-46bd-af1c-e2b71905039a"
+      }
     }
   }
 }
