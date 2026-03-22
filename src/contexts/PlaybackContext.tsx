@@ -15,6 +15,7 @@ type PlaybackContextType = {
   currentIndex: number;
   shuffleEnabled: boolean;
   repeatMode: RepeatMode;
+  setCurrentTrack: (track: Track | null) => void; // NEW: Manual track setter for Expo Go
 };
 
 const PlaybackContext = createContext<PlaybackContextType | undefined>(undefined);
@@ -109,6 +110,7 @@ export function PlaybackProvider({ children }: PlaybackProviderProps) {
     currentIndex,
     shuffleEnabled,
     repeatMode,
+    setCurrentTrack, // Expose setter
   };
 
   return (

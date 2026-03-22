@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLibrary } from '../../contexts/LibraryContext';
+import { usePlayback } from '../../contexts/PlaybackContext';
 import { TrackListItem } from '../../components/library/TrackListItem';
 import { ImportProgress } from '../../components/library/ImportProgress';
 import { convertApiTrackToTrack } from '../../services/playlistService';
@@ -30,6 +31,7 @@ type PlaylistDetailScreenProps = {
 export default function PlaylistDetailScreen({ route, navigation }: PlaylistDetailScreenProps) {
   const { playlistId } = route.params;
   const { selectPlaylist, selectedPlaylist, isLoading, refreshPlaylist } = useLibrary();
+  const { setCurrentTrack } = usePlayback();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
@@ -66,6 +68,10 @@ export default function PlaylistDetailScreen({ route, navigation }: PlaylistDeta
       }
 
       await QueueService.setQueue(playbackTracks);
+      
+      // Manually set current track for MiniPlayer (Expo Go compatibility)
+      setCurrentTrack(playbackTracks[0]);
+      
       Alert.alert('Playing', `Started playing ${playbackTracks.length} ${playbackTracks.length === 1 ? 'track' : 'tracks'}`);
       console.log('✅ Playing all tracks:', playbackTracks.length);
     } catch (error) {
@@ -120,6 +126,10 @@ export default function PlaylistDetailScreen({ route, navigation }: PlaylistDeta
 
       // Play this track with the playlist as context
       await QueueService.playTrack(currentTrack, allPlaybackTracks);
+      
+      // Manually set current track for MiniPlayer (Expo Go compatibility)
+      setCurrentTrack(currentTrack);
+      
       Alert.alert('Now Playing', track.name);
       console.log('✅ Playing track:', track.name);
     } catch (error) {
