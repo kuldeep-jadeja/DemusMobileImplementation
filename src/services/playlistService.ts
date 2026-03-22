@@ -239,8 +239,9 @@ export async function importPlaylist(url: string): Promise<Playlist> {
     }
 
     // Create a new mock playlist
+    const newPlaylistId = `mock-playlist-${Date.now()}`;
     const newPlaylist: Playlist = {
-      id: `mock-playlist-${Date.now()}`,
+      id: newPlaylistId,
       name: 'New Imported Playlist',
       description: 'Imported from Spotify',
       coverImage: 'https://i.scdn.co/image/ab67706f00000003b0e1f5c5a0f9e9e0c9b9d9c1',
@@ -251,6 +252,60 @@ export async function importPlaylist(url: string): Promise<Playlist> {
       spotifyPlaylistId: url.split('/').pop()?.split('?')[0] || 'unknown',
       createdAt: new Date().toISOString(),
     };
+
+    // Generate mock tracks for the new playlist
+    mockTracks[newPlaylistId] = [
+      {
+        id: `${newPlaylistId}-track-1`,
+        spotifyId: 'imported-track-1',
+        name: 'Shape of You',
+        artists: ['Ed Sheeran'],
+        album: '÷ (Divide)',
+        duration: 233713,
+        youtubeVideoId: 'JGwWNGJdvx8',
+        albumImage: 'https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96',
+      },
+      {
+        id: `${newPlaylistId}-track-2`,
+        spotifyId: 'imported-track-2',
+        name: 'Thinking Out Loud',
+        artists: ['Ed Sheeran'],
+        album: 'x (Deluxe Edition)',
+        duration: 281560,
+        youtubeVideoId: 'lp-EO5I60KA',
+        albumImage: 'https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96',
+      },
+      {
+        id: `${newPlaylistId}-track-3`,
+        spotifyId: 'imported-track-3',
+        name: 'Perfect',
+        artists: ['Ed Sheeran'],
+        album: '÷ (Divide)',
+        duration: 263400,
+        youtubeVideoId: '2Vv-BfVoq4g',
+        albumImage: 'https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96',
+      },
+      {
+        id: `${newPlaylistId}-track-4`,
+        spotifyId: 'imported-track-4',
+        name: 'Photograph',
+        artists: ['Ed Sheeran'],
+        album: 'x (Deluxe Edition)',
+        duration: 258200,
+        youtubeVideoId: 'nSDgHBxUbVQ',
+        albumImage: 'https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96',
+      },
+      {
+        id: `${newPlaylistId}-track-5`,
+        spotifyId: 'imported-track-5',
+        name: 'Castle on the Hill',
+        artists: ['Ed Sheeran'],
+        album: '÷ (Divide)',
+        duration: 261320,
+        youtubeVideoId: 'K0ibBPhiaG0',
+        albumImage: 'https://i.scdn.co/image/ab67616d0000b273ba5db46f4b838ef6027e6f96',
+      },
+    ];
 
     mockPlaylists.unshift(newPlaylist);
 
@@ -267,6 +322,7 @@ export async function importPlaylist(url: string): Promise<Playlist> {
     setTimeout(() => {
       newPlaylist.status = 'ready';
       newPlaylist.importProgress = 100;
+      newPlaylist.trackCount = mockTracks[newPlaylistId].length; // Update to actual track count
     }, 6000);
 
     return newPlaylist;

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLibrary } from '../../contexts/LibraryContext';
@@ -49,6 +50,7 @@ export default function PlaylistDetailScreen({ route, navigation }: PlaylistDeta
 
   const handlePlayAll = async () => {
     if (!selectedPlaylist?.tracks || selectedPlaylist.tracks.length === 0) {
+      Alert.alert('No Tracks', 'This playlist has no tracks to play yet.');
       return;
     }
 
@@ -59,19 +61,22 @@ export default function PlaylistDetailScreen({ route, navigation }: PlaylistDeta
         .map(convertApiTrackToTrack);
 
       if (playbackTracks.length === 0) {
-        console.warn('No matched tracks available to play');
+        Alert.alert('No Matched Tracks', 'No tracks have been matched with YouTube yet. Wait for import to complete.');
         return;
       }
 
       await QueueService.setQueue(playbackTracks);
-      console.log('Playing all tracks:', playbackTracks.length);
+      Alert.alert('Playing', `Started playing ${playbackTracks.length} ${playbackTracks.length === 1 ? 'track' : 'tracks'}`);
+      console.log('✅ Playing all tracks:', playbackTracks.length);
     } catch (error) {
       console.error('Failed to play all:', error);
+      Alert.alert('Error', 'Failed to start playback');
     }
   };
 
   const handleAddToQueue = async () => {
     if (!selectedPlaylist?.tracks || selectedPlaylist.tracks.length === 0) {
+      Alert.alert('No Tracks', 'This playlist has no tracks to add yet.');
       return;
     }
 
@@ -82,20 +87,22 @@ export default function PlaylistDetailScreen({ route, navigation }: PlaylistDeta
         .map(convertApiTrackToTrack);
 
       if (playbackTracks.length === 0) {
-        console.warn('No matched tracks available to add');
+        Alert.alert('No Matched Tracks', 'No tracks have been matched with YouTube yet. Wait for import to complete.');
         return;
       }
 
       await QueueService.addTracks(playbackTracks);
-      console.log('Added to queue:', playbackTracks.length, 'tracks');
+      Alert.alert('Added to Queue', `${playbackTracks.length} ${playbackTracks.length === 1 ? 'track' : 'tracks'} added to queue`);
+      console.log('✅ Added to queue:', playbackTracks.length, 'tracks');
     } catch (error) {
       console.error('Failed to add to queue:', error);
+      Alert.alert('Error', 'Failed to add to queue');
     }
   };
 
   const handleTrackPress = async (track: ApiTrack, index: number) => {
     if (!track.youtubeVideoId) {
-      console.warn('Track not yet matched:', track.name);
+      Alert.alert('Track Not Ready', `"${track.name}" hasn't been matched with YouTube yet.`);
       return;
     }
 
@@ -113,9 +120,11 @@ export default function PlaylistDetailScreen({ route, navigation }: PlaylistDeta
 
       // Play this track with the playlist as context
       await QueueService.playTrack(currentTrack, allPlaybackTracks);
-      console.log('Playing track:', track.name);
+      Alert.alert('Now Playing', track.name);
+      console.log('✅ Playing track:', track.name);
     } catch (error) {
       console.error('Failed to play track:', error);
+      Alert.alert('Error', 'Failed to play track');
     }
   };
 
