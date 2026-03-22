@@ -6,7 +6,7 @@
 import { Playlist, ApiTrack, PlaylistStatus } from '../types';
 
 // Toggle between mock and real API
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 
 // API Configuration
 const API_BASE_URL = 'https://music.kuldeepjadeja.dev';

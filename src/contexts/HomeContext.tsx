@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { RecentlyPlayedItem, Track } from '@/types';
 
 // Mock mode for Expo Go testing (set to false when backend is ready)
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 
 type HomeContextType = {
   recentlyPlayed: RecentlyPlayedItem[];

@@ -10,7 +10,7 @@ import type {
 import type { User } from '../types/user';
 
 // Enable mock mode for testing without backend
-const MOCK_MODE = true; // Set to false when backend is ready
+const MOCK_MODE = false; // Set to false when backend is ready
 
 // Mock user database (in-memory for demo)
 const mockUsers: Record<string, { email: string; password: string; displayName: string; id: string }> = {};
