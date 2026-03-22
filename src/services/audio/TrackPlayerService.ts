@@ -1,4 +1,4 @@
-import TrackPlayer, { Capability } from 'react-native-track-player';
+import TrackPlayer, { Capability, isExpoGo } from './TrackPlayerWrapper';
 
 /**
  * Initialize react-native-track-player with required capabilities.
@@ -6,8 +6,16 @@ import TrackPlayer, { Capability } from 'react-native-track-player';
  * 
  * Must be called before any other TrackPlayer methods.
  * Call in App.tsx root useEffect.
+ * 
+ * NOTE: In Expo Go, this is a no-op (returns gracefully).
+ * Audio playback requires a development build or production build.
  */
 export async function setupTrackPlayer(): Promise<void> {
+  // Skip initialization in Expo Go (native module not available)
+  if (isExpoGo) {
+    return;
+  }
+
   try {
     await TrackPlayer.setupPlayer({
       autoHandleInterruptions: true,  // Handle phone calls, alarms

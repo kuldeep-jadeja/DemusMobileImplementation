@@ -2,7 +2,7 @@ import React from 'react';
 import { FlatList, StyleSheet, View, Text, useColorScheme } from 'react-native';
 import { usePlayback } from '@/contexts/PlaybackContext';
 import { removeFromQueue } from '@/services/audio/QueueService';
-import TrackPlayer from 'react-native-track-player';
+import TrackPlayer from '@/services/audio/TrackPlayerWrapper';
 import { QueueItem } from './QueueItem';
 import type { Track } from '@/types';
 

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useProgress, usePlaybackState, useTrackPlayerEvents } from 'react-native-track-player';
-import TrackPlayer, { Event, State } from 'react-native-track-player';
+import { useProgress, usePlaybackState, useTrackPlayerEvents, Event, State } from '@/services/audio/TrackPlayerHooks';
+import TrackPlayer from '@/services/audio/TrackPlayerWrapper';
 import type { Track, RepeatMode } from '@/types';
 import { loadQueueFromStorage, getQueueState } from '@/services/audio/QueueService';
 import { play } from '@/services/audio/PlaybackService';

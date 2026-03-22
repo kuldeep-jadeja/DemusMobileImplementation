@@ -4,7 +4,6 @@ import { AuthProvider } from './src/context/AuthContext';
 import { PlaybackProvider } from './src/contexts/PlaybackContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { setupTrackPlayer } from './src/services/audio/TrackPlayerService';
-import { MiniPlayer } from './src/components/player/MiniPlayer';
 
 export default function App() {
   const [isPlayerReady, setIsPlayerReady] = useState(false);
@@ -38,7 +37,6 @@ export default function App() {
     <PlaybackProvider>
       <AuthProvider>
         <AppNavigator />
-        <MiniPlayer />
       </AuthProvider>
     </PlaybackProvider>
   );

@@ -1,10 +1,12 @@
-import TrackPlayer from 'react-native-track-player';
+import TrackPlayer, { isExpoGo } from './TrackPlayerWrapper';
 import type { Track } from '@/types';
 
 /**
  * Start or resume playback.
+ * In Expo Go, this is a no-op (UI-only mode).
  */
 export async function play(): Promise<void> {
+  if (isExpoGo) return;
   try {
     await TrackPlayer.play();
   } catch (error) {
@@ -15,8 +17,10 @@ export async function play(): Promise<void> {
 
 /**
  * Pause playback.
+ * In Expo Go, this is a no-op (UI-only mode).
  */
 export async function pause(): Promise<void> {
+  if (isExpoGo) return;
   try {
     await TrackPlayer.pause();
   } catch (error) {
@@ -28,8 +32,10 @@ export async function pause(): Promise<void> {
 /**
  * Skip to next track in queue.
  * If at end of queue, behavior depends on repeat mode (handled by context).
+ * In Expo Go, this is a no-op (UI-only mode).
  */
 export async function skipToNext(): Promise<void> {
+  if (isExpoGo) return;
   try {
     await TrackPlayer.skipToNext();
   } catch (error) {
@@ -42,8 +48,10 @@ export async function skipToNext(): Promise<void> {
  * Skip to previous track in queue.
  * If within first 3 seconds of current track, skips to previous.
  * Otherwise, restarts current track.
+ * In Expo Go, this is a no-op (UI-only mode).
  */
 export async function skipToPrevious(): Promise<void> {
+  if (isExpoGo) return;
   try {
     const position = await TrackPlayer.getPosition();
     
@@ -63,8 +71,10 @@ export async function skipToPrevious(): Promise<void> {
 /**
  * Seek to specific position in current track.
  * @param position - Position in seconds (TrackPlayer uses seconds, not ms)
+ * In Expo Go, this is a no-op (UI-only mode).
  */
 export async function seekTo(position: number): Promise<void> {
+  if (isExpoGo) return;
   try {
     await TrackPlayer.seekTo(position);
   } catch (error) {
@@ -76,8 +86,10 @@ export async function seekTo(position: number): Promise<void> {
 /**
  * Get current track from TrackPlayer queue.
  * Returns null if no track is loaded.
+ * In Expo Go, always returns null (no audio).
  */
 export async function getCurrentTrack(): Promise<Track | null> {
+  if (isExpoGo) return null;
   try {
     const currentTrackIndex = await TrackPlayer.getCurrentTrack();
     if (currentTrackIndex === null) return null;
@@ -92,8 +104,10 @@ export async function getCurrentTrack(): Promise<Track | null> {
 
 /**
  * Get current playback position in seconds.
+ * In Expo Go, always returns 0.
  */
 export async function getPosition(): Promise<number> {
+  if (isExpoGo) return 0;
   try {
     return await TrackPlayer.getPosition();
   } catch (error) {

@@ -1,4 +1,4 @@
-import TrackPlayer from 'react-native-track-player';
+import TrackPlayer, { isExpoGo } from './TrackPlayerWrapper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { Track, RepeatMode, QueueState } from '@/types';
 
@@ -13,18 +13,21 @@ let repeatMode: RepeatMode = 'off';
 /**
  * Set entire queue and start playing first track.
  * Clears any existing queue.
+ * In Expo Go, updates state but doesn't play audio.
  */
 export async function setQueue(tracks: Track[]): Promise<void> {
   try {
     originalQueue = [...tracks];
     currentQueue = shuffleEnabled ? shuffleArray([...tracks]) : [...tracks];
 
-    await TrackPlayer.reset();
-    await TrackPlayer.add(currentQueue);
-    
-    if (currentQueue.length > 0) {
-      await TrackPlayer.skip(0);
-      await TrackPlayer.play();
+    if (!isExpoGo) {
+      await TrackPlayer.reset();
+      await TrackPlayer.add(currentQueue);
+      
+      if (currentQueue.length > 0) {
+        await TrackPlayer.skip(0);
+        await TrackPlayer.play();
+      }
     }
 
     await saveQueueToStorage();
@@ -36,12 +39,17 @@ export async function setQueue(tracks: Track[]): Promise<void> {
 
 /**
  * Add track to end of queue.
+ * In Expo Go, updates state only (no audio).
  */
 export async function addToQueue(track: Track): Promise<void> {
   try {
     originalQueue.push(track);
     currentQueue.push(track);
-    await TrackPlayer.add(track);
+    
+    if (!isExpoGo) {
+      await TrackPlayer.add(track);
+    }
+    
     await saveQueueToStorage();
   } catch (error) {
     console.error('Add to queue failed:', error);
@@ -52,10 +60,14 @@ export async function addToQueue(track: Track): Promise<void> {
 /**
  * Remove track from queue by index.
  * If removing current track, skips to next.
+ * In Expo Go, updates state only (no audio).
  */
 export async function removeFromQueue(index: number): Promise<void> {
   try {
-    const currentIndex = await TrackPlayer.getCurrentTrack();
+    let currentIndex = null;
+    if (!isExpoGo) {
+      currentIndex = await TrackPlayer.getCurrentTrack();
+    }
     
     // Remove from both queues
     const removedTrack = currentQueue[index];
@@ -66,7 +78,9 @@ export async function removeFromQueue(index: number): Promise<void> {
       originalQueue.splice(originalIndex, 1);
     }
 
-    await TrackPlayer.remove(index);
+    if (!isExpoGo) {
+      await TrackPlayer.remove(index);
+    }
 
     // If we removed current track, TrackPlayer auto-advances
     // No need to manually skip
