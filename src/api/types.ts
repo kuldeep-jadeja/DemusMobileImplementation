@@ -15,19 +15,20 @@ export interface ApiError {
 
 export const API_ENDPOINTS = {
   AUTH: {
-    LOGIN: '/auth/login',
-    REGISTER: '/auth/register',
-    LOGOUT: '/auth/logout',
-    REFRESH: '/auth/refresh',
-    FORGOT_PASSWORD: '/auth/forgot-password',
-    RESET_PASSWORD: '/auth/reset-password',
-    CHANGE_PASSWORD: '/auth/change-password',
-    GOOGLE: '/auth/google',
-    APPLE: '/auth/apple',
+    LOGIN: '/api/auth/login',
+    REGISTER: '/api/auth/signup',
+    LOGOUT: '/api/auth/logout',
+    ME: '/api/auth/me',
+    REFRESH: '/api/auth/refresh',
+    FORGOT_PASSWORD: '/api/auth/forgot-password',
+    RESET_PASSWORD: '/api/auth/reset-password',
+    CHANGE_PASSWORD: '/api/auth/change-password',
+    GOOGLE: '/api/auth/google',
+    APPLE: '/api/auth/apple',
   },
   USER: {
-    PROFILE: '/user/profile',
-    UPDATE_PROFILE: '/user/profile',
+    PROFILE: '/api/user/profile',
+    UPDATE_PROFILE: '/api/user/profile',
   },
 } as const;
 

@@ -63,9 +63,24 @@ export const authService = {
       return user;
     }
     
-    const response = await authApi.register({ email, password, displayName });
-    await this.storeTokens(response.data);
-    return response.data.user;
+    // Backend /api/auth/signup expects { email, password } only
+    const response = await authApi.register({ email, password });
+    const backendUser = response.data.user;
+    
+    // Map backend user to our User type
+    const user: User = {
+      id: backendUser.id,
+      email: backendUser.email,
+      username: displayName || backendUser.email.split('@')[0],
+      displayName: displayName || backendUser.email.split('@')[0],
+      createdAt: new Date().toISOString(),
+      profileImageUrl: undefined,
+    };
+    
+    // Store user data (no tokens - backend uses cookies)
+    await storageService.setUserData(user);
+    
+    return user;
   },
 
   async login(email: string, password: string): Promise<User> {
@@ -96,9 +111,24 @@ export const authService = {
       return user;
     }
     
+    // Backend returns { user: { id, email } } and sets HTTP-only cookie
     const response = await authApi.login({ email, password });
-    await this.storeTokens(response.data);
-    return response.data.user;
+    const backendUser = response.data.user;
+    
+    // Map backend user to our User type
+    const user: User = {
+      id: backendUser.id,
+      email: backendUser.email,
+      username: backendUser.email.split('@')[0], // Use email prefix as username
+      displayName: backendUser.email.split('@')[0], // Backend doesn't have displayName
+      createdAt: new Date().toISOString(),
+      profileImageUrl: undefined,
+    };
+    
+    // Store user data (no tokens - backend uses cookies)
+    await storageService.setUserData(user);
+    
+    return user;
   },
 
   async loginWithGoogle(authCode: string): Promise<User> {
