@@ -1,9 +1,13 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useProgress, usePlaybackState, useTrackPlayerEvents, Event, State } from '@/services/audio/TrackPlayerHooks';
 import TrackPlayer from '@/services/audio/TrackPlayerWrapper';
-import type { Track, RepeatMode } from '@/types';
+import type { Track, RepeatMode, RecentlyPlayedItem } from '@/types';
 import { loadQueueFromStorage, getQueueState } from '@/services/audio/QueueService';
 import { play } from '@/services/audio/PlaybackService';
+
+const HISTORY_STORAGE_KEY = '@demus:recentlyPlayed';
+const MAX_HISTORY_ITEMS = 20;
 
 type PlaybackContextType = {
   currentTrack: Track | null;
@@ -31,6 +35,47 @@ export function PlaybackProvider({ children }: PlaybackProviderProps) {
   const [shuffleEnabled, setShuffleEnabled] = useState(false);
   const [repeatMode, setRepeatMode] = useState<RepeatMode>('off');
 
+  /**
+   * Save track to recently played history
+   */
+  const saveToHistory = async (track: Track) => {
+    try {
+      // Load existing history
+      const stored = await AsyncStorage.getItem(HISTORY_STORAGE_KEY);
+      let history: RecentlyPlayedItem[] = stored ? JSON.parse(stored) : [];
+
+      // Create new history item
+      const newItem: RecentlyPlayedItem = {
+        track,
+        playedAt: new Date().toISOString(),
+        // Optional: add playlist context if available (can be enhanced later)
+      };
+
+      // Prepend to history (most recent first)
+      history = [newItem, ...history];
+
+      // Keep only last MAX_HISTORY_ITEMS
+      history = history.slice(0, MAX_HISTORY_ITEMS);
+
+      // Save back to storage
+      await AsyncStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+      console.log('✅ [PlaybackContext] Saved to history:', track.title);
+    } catch (error) {
+      console.error('❌ [PlaybackContext] Failed to save history:', error);
+    }
+  };
+
+  /**
+   * Wrapper for setCurrentTrack that also saves to history
+   * Used for manual track setting in Expo Go
+   */
+  const setCurrentTrackWithHistory = async (track: Track | null) => {
+    setCurrentTrack(track);
+    if (track) {
+      await saveToHistory(track);
+    }
+  };
+
   // Use RNTP hooks - update every 1 second (not default 250ms)
   const { position, duration } = useProgress(1000);
   const playbackState = usePlaybackState();
@@ -42,8 +87,14 @@ export function PlaybackProvider({ children }: PlaybackProviderProps) {
   useTrackPlayerEvents([Event.PlaybackTrackChanged], async (event) => {
     if (event.type === Event.PlaybackTrackChanged && event.nextTrack !== undefined) {
       const track = await TrackPlayer.getTrack(event.nextTrack);
-      setCurrentTrack(track as Track);
+      const trackData = track as Track;
+      setCurrentTrack(trackData);
       setCurrentIndex(event.nextTrack);
+      
+      // Save to history
+      if (trackData) {
+        await saveToHistory(trackData);
+      }
     }
   });
 
@@ -110,7 +161,7 @@ export function PlaybackProvider({ children }: PlaybackProviderProps) {
     currentIndex,
     shuffleEnabled,
     repeatMode,
-    setCurrentTrack, // Expose setter
+    setCurrentTrack: setCurrentTrackWithHistory, // Use wrapper that saves to history
   };
 
   return (

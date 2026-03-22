@@ -79,3 +79,13 @@ export type ApiTrack = {
   albumImage?: string;
   importedAt?: string;     // ISO date string
 };
+
+/**
+ * Recently played track with metadata
+ */
+export type RecentlyPlayedItem = {
+  track: Track;
+  playedAt: string;        // ISO timestamp
+  playlistId?: string;     // Optional playlist context
+  playlistName?: string;   // Optional playlist name for display
+};

@@ -3,6 +3,7 @@ import { Text, View, ActivityIndicator, StyleSheet } from 'react-native';
 import { AuthProvider } from './src/context/AuthContext';
 import { PlaybackProvider } from './src/contexts/PlaybackContext';
 import { LibraryProvider } from './src/contexts/LibraryContext';
+import { HomeProvider } from './src/contexts/HomeContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { setupTrackPlayer } from './src/services/audio/TrackPlayerService';
 
@@ -38,7 +39,9 @@ export default function App() {
     <PlaybackProvider>
       <AuthProvider>
         <LibraryProvider>
-          <AppNavigator />
+          <HomeProvider>
+            <AppNavigator />
+          </HomeProvider>
         </LibraryProvider>
       </AuthProvider>
     </PlaybackProvider>
