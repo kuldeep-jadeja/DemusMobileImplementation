@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../hooks/useAuth';
+import { usePlayback } from '../contexts/PlaybackContext';
 import { ActivityIndicator, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MiniPlayer } from '../components/player/MiniPlayer';
@@ -71,8 +72,16 @@ function MainTabs() {
   );
 }
 
-export const AppNavigator = () => {
+export function AppNavigator() {
   const { user, loading } = useAuth();
+  const { resetPlayback } = usePlayback();
+
+  // Reset playback state when user logs out
+  useEffect(() => {
+    if (!user) {
+      resetPlayback();
+    }
+  }, [user]);
 
   if (loading) {
     return (

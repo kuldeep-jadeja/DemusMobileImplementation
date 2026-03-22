@@ -20,6 +20,7 @@ type PlaybackContextType = {
   shuffleEnabled: boolean;
   repeatMode: RepeatMode;
   setCurrentTrack: (track: Track | null) => void; // NEW: Manual track setter for Expo Go
+  resetPlayback: () => void; // NEW: Reset playback state on logout
 };
 
 const PlaybackContext = createContext<PlaybackContextType | undefined>(undefined);
@@ -151,6 +152,18 @@ export function PlaybackProvider({ children }: PlaybackProviderProps) {
     return () => clearInterval(interval);
   }, []);
 
+  /**
+   * Reset playback state (called on logout)
+   */
+  const resetPlayback = () => {
+    setCurrentTrack(null);
+    setCurrentIndex(0);
+    setQueue([]);
+    setShuffleEnabled(false);
+    setRepeatMode('off');
+    console.log('✅ [PlaybackContext] Playback state reset');
+  };
+
   const value: PlaybackContextType = {
     currentTrack,
     position,
@@ -162,6 +175,7 @@ export function PlaybackProvider({ children }: PlaybackProviderProps) {
     shuffleEnabled,
     repeatMode,
     setCurrentTrack: setCurrentTrackWithHistory, // Use wrapper that saves to history
+    resetPlayback, // Expose reset function
   };
 
   return (
