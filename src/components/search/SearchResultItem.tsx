@@ -3,6 +3,7 @@ import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Track, Playlist } from '@/types/audio';
 import { colors } from '@/constants/colors';
+import { FavoriteButton } from '@/components/common/FavoriteButton';
 
 interface SearchResultItemProps {
   type: 'track' | 'playlist';

@@ -87,13 +87,6 @@ function MainTabs() {
           ),
         }}
       />
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
-          ),
-        }}
-      />
     </Tab.Navigator>
   );
 }

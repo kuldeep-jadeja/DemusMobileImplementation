@@ -292,8 +292,13 @@ class FavoritesService {
       );
 
       console.log(`[FavoritesService] Synced ${mergedFavorites.length} favorites`);
-    } catch (error) {
-      console.error('[FavoritesService] Sync from backend failed:', error);
+    } catch (error: any) {
+      // Silently fail if backend is unavailable (offline-first)
+      if (error?.response?.status === 404) {
+        console.log('[FavoritesService] Backend favorites endpoint not available (404)');
+      } else {
+        console.warn('[FavoritesService] Sync from backend failed:', error?.message);
+      }
       // Don't throw - offline support
     }
   }

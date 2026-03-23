@@ -31,8 +31,8 @@ export function useSearch() {
 
     setIsSearching(true);
 
-    debounceTimer.current = setTimeout(async () => {
-      await performSearch(query, filter);
+    debounceTimer.current = setTimeout(() => {
+      performSearch(query, filter);
       setIsSearching(false);
     }, 500);
 
@@ -43,29 +43,30 @@ export function useSearch() {
     };
   }, [query, filter]);
 
-  const performSearch = async (searchQuery: string, searchFilter: SearchFilter) => {
+  const performSearch = (searchQuery: string, searchFilter: SearchFilter) => {
     try {
       let searchResults: SearchResults;
 
       switch (searchFilter) {
         case 'tracks':
-          const tracks = await searchService.searchTracks(searchQuery);
+          const tracks = searchService.searchTracks(searchQuery);
           searchResults = { tracks, playlists: [], totalCount: tracks.length };
           break;
         case 'playlists':
-          const playlists = await searchService.searchPlaylists(searchQuery);
+          const playlists = searchService.searchPlaylists(searchQuery);
           searchResults = { tracks: [], playlists, totalCount: playlists.length };
           break;
         default:
-          searchResults = await searchService.searchAll(searchQuery);
+          searchResults = searchService.searchAll(searchQuery);
       }
 
       setResults(searchResults);
 
-      // Save to recent searches
-      if (searchQuery.trim()) {
-        await searchService.saveSearch(searchQuery);
-        await loadRecentSearches();
+      // Only save to recent searches if we found results
+      if (searchQuery.trim() && searchResults.totalCount > 0) {
+        searchService.saveSearch(searchQuery).then(() => {
+          loadRecentSearches();
+        });
       }
     } catch (error) {
       console.error('Search failed:', error);

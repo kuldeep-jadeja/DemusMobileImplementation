@@ -21,8 +21,16 @@ export function FavoritesScreen() {
 
   const handleTrackPress = async (track: Track) => {
     try {
-      // Convert FavoriteTrack[] to Track[] by removing favoritedAt
-      const tracks = favoriteTracks.map(({ favoritedAt, ...track }) => track);
+      // Convert FavoriteTrack[] to Track[] for playback queue
+      const tracks: Track[] = favoriteTracks.map(fav => ({
+        id: fav.id,
+        title: fav.title,
+        artist: fav.artist,
+        albumArt: fav.albumArt,
+        duration: fav.duration,
+        spotifyId: fav.spotifyId,
+        youtubeVideoId: fav.youtubeVideoId,
+      }));
       await playTrack(track, tracks);
     } catch (error) {
       console.error('Failed to play track:', error);

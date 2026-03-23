@@ -1,5 +1,4 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { playlistService } from './playlistService';
 import { Track, Playlist } from '@/types/audio';
 
 const RECENT_SEARCHES_KEY = '@demus:recentSearches';
@@ -12,24 +11,27 @@ export interface SearchResults {
 }
 
 class SearchService {
-  // Cache for all tracks to avoid repeated API calls
-  private tracksCache: Track[] | null = null;
-  private playlistsCache: Playlist[] | null = null;
-  private cacheTimestamp: number = 0;
-  private readonly CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+  // Cache for all tracks and playlists from LibraryContext
+  private tracksCache: Track[] = [];
+  private playlistsCache: Playlist[] = [];
+
+  /**
+   * Update the search cache with data from LibraryContext
+   */
+  updateCache(tracks: Track[], playlists: Playlist[]): void {
+    this.tracksCache = tracks;
+    this.playlistsCache = playlists;
+  }
 
   /**
    * Search across all tracks and playlists
    */
-  async searchAll(query: string): Promise<SearchResults> {
+  searchAll(query: string): SearchResults {
     if (!query.trim()) {
       return { tracks: [], playlists: [], totalCount: 0 };
     }
 
     const normalizedQuery = query.toLowerCase().trim();
-
-    // Get or refresh cache
-    await this.ensureCache();
 
     // Search tracks
     const tracks = this.searchTracksInCache(normalizedQuery);
@@ -47,26 +49,24 @@ class SearchService {
   /**
    * Search only tracks
    */
-  async searchTracks(query: string): Promise<Track[]> {
+  searchTracks(query: string): Track[] {
     if (!query.trim()) {
       return [];
     }
 
     const normalizedQuery = query.toLowerCase().trim();
-    await this.ensureCache();
     return this.searchTracksInCache(normalizedQuery);
   }
 
   /**
    * Search only playlists
    */
-  async searchPlaylists(query: string): Promise<Playlist[]> {
+  searchPlaylists(query: string): Playlist[] {
     if (!query.trim()) {
       return [];
     }
 
     const normalizedQuery = query.toLowerCase().trim();
-    await this.ensureCache();
     return this.searchPlaylistsInCache(normalizedQuery);
   }
 
@@ -121,69 +121,9 @@ class SearchService {
     }
   }
 
-  /**
-   * Invalidate the search cache (call after playlist import)
-   */
-  invalidateCache(): void {
-    this.tracksCache = null;
-    this.playlistsCache = null;
-    this.cacheTimestamp = 0;
-  }
-
   // Private helper methods
 
-  private async ensureCache(): Promise<void> {
-    const now = Date.now();
-    const cacheExpired = now - this.cacheTimestamp > this.CACHE_DURATION;
-
-    if (!this.tracksCache || !this.playlistsCache || cacheExpired) {
-      await this.buildCache();
-    }
-  }
-
-  private async buildCache(): Promise<void> {
-    try {
-      // Get all playlists
-      const playlists = await playlistService.getPlaylists();
-      this.playlistsCache = playlists;
-
-      // Get all tracks from all playlists
-      const allTracks: Track[] = [];
-      const seenTrackIds = new Set<string>();
-
-      for (const playlist of playlists) {
-        try {
-          const details = await playlistService.getPlaylistById(playlist.id);
-          
-          // Deduplicate tracks
-          for (const track of details.tracks) {
-            if (!seenTrackIds.has(track.id)) {
-              seenTrackIds.add(track.id);
-              allTracks.push(track);
-            }
-          }
-        } catch (error) {
-          console.error(`Failed to load playlist ${playlist.id}:`, error);
-          // Continue with other playlists
-        }
-      }
-
-      this.tracksCache = allTracks;
-      this.cacheTimestamp = Date.now();
-
-      console.log(`Search cache built: ${allTracks.length} tracks, ${playlists.length} playlists`);
-    } catch (error) {
-      console.error('Failed to build search cache:', error);
-      this.tracksCache = [];
-      this.playlistsCache = [];
-    }
-  }
-
   private searchTracksInCache(query: string): Track[] {
-    if (!this.tracksCache) {
-      return [];
-    }
-
     return this.tracksCache
       .filter(track => {
         const titleMatch = track.title.toLowerCase().includes(query);
@@ -194,10 +134,6 @@ class SearchService {
   }
 
   private searchPlaylistsInCache(query: string): Playlist[] {
-    if (!this.playlistsCache) {
-      return [];
-    }
-
     return this.playlistsCache
       .filter(playlist => {
         const nameMatch = playlist.name.toLowerCase().includes(query);
