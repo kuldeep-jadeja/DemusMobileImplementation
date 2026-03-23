@@ -4,6 +4,7 @@ import { AuthProvider } from './src/context/AuthContext';
 import { PlaybackProvider } from './src/contexts/PlaybackContext';
 import { LibraryProvider } from './src/contexts/LibraryContext';
 import { HomeProvider } from './src/contexts/HomeContext';
+import { FavoritesProvider } from './src/contexts/FavoritesContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { setupTrackPlayer } from './src/services/audio/TrackPlayerService';
 
@@ -39,9 +40,11 @@ export default function App() {
     <PlaybackProvider>
       <AuthProvider>
         <LibraryProvider>
-          <HomeProvider>
-            <AppNavigator />
-          </HomeProvider>
+          <FavoritesProvider>
+            <HomeProvider>
+              <AppNavigator />
+            </HomeProvider>
+          </FavoritesProvider>
         </LibraryProvider>
       </AuthProvider>
     </PlaybackProvider>

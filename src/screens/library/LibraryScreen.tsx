@@ -6,9 +6,11 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLibrary } from '../../contexts/LibraryContext';
+import { useFavorites } from '../../contexts/FavoritesContext';
 import { PlaylistCard } from '../../components/library/PlaylistCard';
 import { ImportPlaylistButton } from '../../components/library/ImportPlaylistButton';
 import { Playlist } from '../../types';
@@ -19,7 +21,10 @@ type LibraryScreenProps = {
 
 export default function LibraryScreen({ navigation }: LibraryScreenProps) {
   const { playlists, isLoading, error, fetchPlaylists } = useLibrary();
+  const { favoriteTracks, favoritePlaylists } = useFavorites();
   const [refreshing, setRefreshing] = React.useState(false);
+
+  const totalFavorites = favoriteTracks.length + favoritePlaylists.length;
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -48,6 +53,24 @@ export default function LibraryScreen({ navigation }: LibraryScreenProps) {
       playlist={item}
       onPress={() => handlePlaylistPress(item)}
     />
+  );
+
+  const renderHeader = () => (
+    <TouchableOpacity
+      style={styles.favoritesRow}
+      onPress={() => navigation.navigate('Favorites')}
+    >
+      <View style={styles.favoritesIcon}>
+        <Ionicons name="heart" size={24} color="#ef4444" />
+      </View>
+      <View style={styles.favoritesInfo}>
+        <Text style={styles.favoritesTitle}>Favorites</Text>
+        <Text style={styles.favoritesCount}>
+          {totalFavorites} {totalFavorites === 1 ? 'item' : 'items'}
+        </Text>
+      </View>
+      <Ionicons name="chevron-forward" size={24} color="#999" />
+    </TouchableOpacity>
   );
 
   const renderEmpty = () => {
@@ -119,6 +142,7 @@ export default function LibraryScreen({ navigation }: LibraryScreenProps) {
         data={playlists}
         renderItem={renderPlaylist}
         keyExtractor={(item) => item.id}
+        ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={[
           styles.listContent,
@@ -214,5 +238,35 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#ccc',
     lineHeight: 20,
+  },
+  favoritesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+    padding: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+  },
+  favoritesIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#2a2a2a',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  favoritesInfo: {
+    flex: 1,
+  },
+  favoritesTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  favoritesCount: {
+    fontSize: 14,
+    color: '#999',
   },
 });

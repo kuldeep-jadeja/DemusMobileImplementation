@@ -12,15 +12,25 @@ import { LoginScreen } from '../screens/auth/LoginScreen';
 import { RegisterScreen } from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 import HomeScreen from '../screens/home/HomeScreen';
+import EnhancedProfileScreen from '../screens/profile/EnhancedProfileScreen';
+import SettingsScreen from '../screens/profile/SettingsScreen';
 import ProfileScreen from '../screens/auth/ProfileScreen';
 import ChangePasswordScreen from '../screens/auth/ChangePasswordScreen';
 import { PlayerScreen } from '../screens/PlayerScreen';
 import { QueueScreen } from '../screens/QueueScreen';
 import LibraryScreen from '../screens/library/LibraryScreen';
 import PlaylistDetailScreen from '../screens/library/PlaylistDetailScreen';
+import { FavoritesScreen } from '../screens/library/FavoritesScreen';
+import { SearchScreen } from '../screens/search/SearchScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
+
+export type LibraryStackParamList = {
+  Library: undefined;
+  PlaylistDetail: { playlistId: string };
+  Favorites: undefined;
+};
 
 function MainTabs() {
   return (
@@ -50,17 +60,33 @@ function MainTabs() {
         }}
       />
       <Tab.Screen
+        name="Search"
+        component={SearchScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="search" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tab.Screen
         name="Library"
         component={LibraryScreen}
         options={{
-          tabBarIcon: ({ color, size }) => (
+          tabBarIcon: ({ color, size}) => (
             <Ionicons name="library" size={size} color={color} />
           ),
         }}
       />
       <Tab.Screen
         name="ProfileTab"
-        component={ProfileScreen}
+        component={EnhancedProfileScreen}
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
+        }}
+      />
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, size }) => (
@@ -115,6 +141,20 @@ export function AppNavigator() {
             component={PlaylistDetailScreen}
             options={{
               title: 'Playlist',
+            }}
+          />
+          <Stack.Screen
+            name="Favorites"
+            component={FavoritesScreen}
+            options={{
+              title: 'Favorites',
+            }}
+          />
+          <Stack.Screen 
+            name="Settings" 
+            component={SettingsScreen}
+            options={{
+              title: 'Settings',
             }}
           />
           <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
