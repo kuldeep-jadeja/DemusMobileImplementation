@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, SafeAreaView, Keyboard } from 'react-native';
+import { View, StyleSheet, SafeAreaView, Keyboard, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
@@ -8,9 +8,8 @@ import { RecentSearches } from '@/components/search/RecentSearches';
 import { SearchResults } from '@/components/search/SearchResults';
 import { useSearch } from '@/hooks/useSearch';
 import { usePlayback } from '@/contexts/PlaybackContext';
-import { useLibrary } from '@/contexts/LibraryContext';
+import { useFavorites } from '@/contexts/FavoritesContext';
 import { searchService } from '@/services/searchService';
-import * as playlistService from '@/services/playlistService';
 import { playTrack } from '@/services/audio/QueueService';
 import { Track, Playlist } from '@/types/audio';
 import { LibraryStackParamList } from '@/navigation/AppNavigator';
@@ -20,7 +19,7 @@ type NavigationProp = NativeStackNavigationProp<LibraryStackParamList>;
 
 export function SearchScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const { playlists } = useLibrary();
+  const { favoriteTracks } = useFavorites();
   const {
     query,
     setQuery,
@@ -34,43 +33,22 @@ export function SearchScreen() {
 
   const { currentTrack } = usePlayback();
 
-  // Update search cache when playlists change
+  // Use favorites as search source since they're already loaded with full track data
   useEffect(() => {
-    const loadTracksForSearch = async () => {
-      if (!playlists || playlists.length === 0) {
-        searchService.updateCache([], []);
-        return;
-      }
-
-      // Wait a bit for playlists to be fully loaded
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      const allTracks: Track[] = [];
-      const seenTrackIds = new Set<string>();
-
-      // Load full playlist details to get tracks
-      for (const playlist of playlists) {
-        try {
-          const fullPlaylist = await playlistService.getPlaylistById(playlist.id);
-          
-          if (fullPlaylist?.tracks && Array.isArray(fullPlaylist.tracks)) {
-            for (const track of fullPlaylist.tracks) {
-              if (track && track.id && track.title && !seenTrackIds.has(track.id)) {
-                seenTrackIds.add(track.id);
-                allTracks.push(track);
-              }
-            }
-          }
-        } catch (err) {
-          // Continue to next playlist
-        }
-      }
-
-      searchService.updateCache(allTracks, playlists);
-    };
-
-    loadTracksForSearch();
-  }, [playlists]);
+    if (favoriteTracks && favoriteTracks.length > 0) {
+      const tracks: Track[] = favoriteTracks.map(fav => ({
+        id: fav.id,
+        title: fav.title,
+        artist: fav.artist,
+        albumArt: fav.albumArt || '',
+        duration: fav.duration || 0,
+        spotifyId: fav.spotifyId,
+        youtubeVideoId: fav.youtubeVideoId,
+        album: fav.album,
+      }));
+      searchService.updateCache(tracks, []);
+    }
+  }, [favoriteTracks]);
 
   const handleTrackPress = async (track: Track) => {
     try {
