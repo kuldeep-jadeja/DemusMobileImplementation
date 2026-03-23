@@ -13,10 +13,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useLibrary } from '../../contexts/LibraryContext';
 import { usePlayback } from '../../contexts/PlaybackContext';
+import { useFavorites } from '../../contexts/FavoritesContext';
 import { TrackListItem } from '../../components/library/TrackListItem';
 import { ImportProgress } from '../../components/library/ImportProgress';
+import { FavoriteButton } from '../../components/common/FavoriteButton';
 import { convertApiTrackToTrack } from '../../services/playlistService';
-import { ApiTrack, Track } from '../../types';
+import { ApiTrack, Track, Playlist } from '../../types';
 import * as QueueService from '../../services/audio/QueueService';
 
 type PlaylistDetailScreenProps = {
@@ -32,6 +34,7 @@ export default function PlaylistDetailScreen({ route, navigation }: PlaylistDeta
   const { playlistId } = route.params;
   const { selectPlaylist, selectedPlaylist, isLoading, refreshPlaylist } = useLibrary();
   const { setCurrentTrack } = usePlayback();
+  const { isFavoritePlaylist } = useFavorites();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
@@ -192,7 +195,19 @@ export default function PlaylistDetailScreen({ route, navigation }: PlaylistDeta
 
               {/* Playlist Info */}
               <View style={styles.playlistInfo}>
-                <Text style={styles.playlistName}>{selectedPlaylist.name}</Text>
+                <View style={styles.playlistTitleRow}>
+                  <Text style={styles.playlistName} numberOfLines={2}>
+                    {selectedPlaylist.name}
+                  </Text>
+                  {/* Favorite Button for Playlist */}
+                  <FavoriteButton
+                    itemId={selectedPlaylist.id}
+                    itemType="playlist"
+                    item={selectedPlaylist as Playlist}
+                    size="large"
+                    color="#1DB954"
+                  />
+                </View>
                 {selectedPlaylist.description && (
                   <Text style={styles.playlistDescription} numberOfLines={3}>
                     {selectedPlaylist.description}
@@ -304,11 +319,18 @@ const styles = StyleSheet.create({
   playlistInfo: {
     marginBottom: 16,
   },
+  playlistTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+    gap: 12,
+  },
   playlistName: {
+    flex: 1,
     fontSize: 28,
     fontWeight: '700',
     color: '#fff',
-    marginBottom: 8,
   },
   playlistDescription: {
     fontSize: 14,

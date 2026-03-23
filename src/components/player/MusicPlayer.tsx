@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, useColorScheme } from 'react-native';
 import { usePlayback } from '@/contexts/PlaybackContext';
+import { FavoriteButton } from '@/components/common/FavoriteButton';
 import { ProgressBar } from './ProgressBar';
 import { PlaybackControls } from './PlaybackControls';
 import { ShuffleRepeatControls } from './ShuffleRepeatControls';
@@ -74,6 +75,23 @@ export function MusicPlayer() {
             {currentTrack.album}
           </Text>
         )}
+        
+        {/* Favorite Button */}
+        <View style={styles.favoriteContainer}>
+          <FavoriteButton
+            itemId={currentTrack.id}
+            itemType="track"
+            item={{
+              id: currentTrack.id,
+              title: currentTrack.title,
+              artist: currentTrack.artist,
+              albumArt: currentTrack.artwork || '',
+              duration: currentTrack.duration || 0,
+              videoId: (currentTrack as any).videoId || '',
+            }}
+            size="large"
+          />
+        </View>
       </View>
 
       {/* Progress Bar */}
@@ -175,5 +193,9 @@ const styles = StyleSheet.create({
   },
   albumDark: {
     color: '#888888',
+  },
+  favoriteContainer: {
+    alignItems: 'center',
+    marginTop: 16,
   },
 });

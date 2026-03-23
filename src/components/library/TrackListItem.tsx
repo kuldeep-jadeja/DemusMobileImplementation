@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { FavoriteButton } from '@/components/common/FavoriteButton';
 import { ApiTrack } from '../../types';
 
 type TrackListItemProps = {
@@ -48,6 +49,23 @@ export function TrackListItem({ track, index, onPress, onMenuPress }: TrackListI
           {track.artists.join(', ')}
         </Text>
       </View>
+
+      {/* Favorite Button */}
+      {track.youtubeVideoId && (
+        <FavoriteButton
+          itemId={track.spotifyId || track.youtubeVideoId}
+          itemType="track"
+          item={{
+            id: track.spotifyId || track.youtubeVideoId,
+            title: track.name,
+            artist: track.artists.join(', '),
+            albumArt: track.albumImage || '',
+            duration: track.duration,
+            videoId: track.youtubeVideoId,
+          }}
+          size="small"
+        />
+      )}
 
       {/* Duration */}
       <Text style={styles.duration}>{formatDuration(track.duration)}</Text>

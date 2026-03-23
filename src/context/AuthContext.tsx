@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { authService } from '../services/authService';
+import { favoritesService } from '../services/favoritesService';
 import type { User } from '../types/user';
 
 interface AuthContextType {
@@ -37,14 +38,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (email: string, password: string) => {
     const userData = await authService.login(email, password);
     setUser(userData);
+    
+    // Sync favorites after successful login (non-blocking)
+    favoritesService.syncFromBackend().catch(err => {
+      console.error('[AuthContext] Failed to sync favorites on login:', err);
+    });
   };
 
   const register = async (email: string, password: string, displayName: string) => {
     const userData = await authService.register(email, password, displayName);
     setUser(userData);
+    
+    // Sync favorites after successful registration (non-blocking)
+    favoritesService.syncFromBackend().catch(err => {
+      console.error('[AuthContext] Failed to sync favorites on register:', err);
+    });
   };
 
   const logout = async () => {
+    // Clear favorites before logout
+    await favoritesService.clearAllFavorites();
+    
     await authService.logout();
     setUser(null);
   };
