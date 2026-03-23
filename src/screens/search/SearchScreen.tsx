@@ -37,8 +37,12 @@ export function SearchScreen() {
   // Update search cache when playlists change
   useEffect(() => {
     const loadTracksForSearch = async () => {
+      console.log('🔍 SearchScreen: Starting to load tracks for search...');
+      console.log('📚 Playlists available:', playlists?.length || 0);
+      
       if (!playlists || playlists.length === 0) {
         searchService.updateCache([], []);
+        console.log('⚠️ No playlists to load tracks from');
         return;
       }
 
@@ -48,7 +52,10 @@ export function SearchScreen() {
       // Load full playlist details to get tracks
       for (const playlist of playlists) {
         try {
+          console.log(`📂 Loading tracks from playlist: ${playlist.name}`);
           const fullPlaylist = await playlistService.getPlaylistById(playlist.id);
+          console.log(`  ✅ Got ${fullPlaylist.tracks?.length || 0} tracks`);
+          
           if (fullPlaylist.tracks && Array.isArray(fullPlaylist.tracks)) {
             fullPlaylist.tracks.forEach(track => {
               if (!seenTrackIds.has(track.id)) {
@@ -58,12 +65,12 @@ export function SearchScreen() {
             });
           }
         } catch (err) {
-          console.warn(`Failed to load tracks for playlist ${playlist.name}`);
+          console.error(`❌ Failed to load tracks for playlist ${playlist.name}:`, err);
         }
       }
 
       searchService.updateCache(allTracks, playlists);
-      console.log(`✅ Search cache: ${allTracks.length} tracks, ${playlists.length} playlists`);
+      console.log(`✅ Search cache loaded: ${allTracks.length} tracks, ${playlists.length} playlists`);
     };
 
     loadTracksForSearch();
