@@ -21,19 +21,25 @@ export function FavoritesScreen() {
 
   const handleTrackPress = async (track: Track) => {
     try {
-      // Convert FavoriteTrack[] to Track[] for playback queue
-      const tracks: Track[] = favoriteTracks.map(fav => ({
-        id: fav.id,
-        title: fav.title,
-        artist: fav.artist,
-        albumArt: fav.albumArt,
-        duration: fav.duration,
-        spotifyId: fav.spotifyId,
-        youtubeVideoId: fav.youtubeVideoId,
-      }));
+      // Create proper Track objects from FavoriteTracks
+      const tracks: Track[] = favoriteTracks.map(fav => {
+        const trackObj: Track = {
+          id: fav.id,
+          title: fav.title,
+          artist: fav.artist,
+          albumArt: fav.albumArt || '',
+          duration: fav.duration || 0,
+        };
+        if (fav.spotifyId) trackObj.spotifyId = fav.spotifyId;
+        if (fav.youtubeVideoId) trackObj.youtubeVideoId = fav.youtubeVideoId;
+        if (fav.album) trackObj.album = fav.album;
+        return trackObj;
+      });
+      
+      console.log(`🎵 Playing from favorites: ${track.title}, queue: ${tracks.length} tracks`);
       await playTrack(track, tracks);
     } catch (error) {
-      console.error('Failed to play track:', error);
+      console.error('❌ Failed to play track:', error);
     }
   };
 

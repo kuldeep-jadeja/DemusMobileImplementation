@@ -10,6 +10,7 @@ import { useSearch } from '@/hooks/useSearch';
 import { usePlayback } from '@/contexts/PlaybackContext';
 import { useLibrary } from '@/contexts/LibraryContext';
 import { searchService } from '@/services/searchService';
+import * as playlistService from '@/services/playlistService';
 import { playTrack } from '@/services/audio/QueueService';
 import { Track, Playlist } from '@/types/audio';
 import { LibraryStackParamList } from '@/navigation/AppNavigator';
@@ -35,29 +36,37 @@ export function SearchScreen() {
 
   // Update search cache when playlists change
   useEffect(() => {
-    if (!playlists || playlists.length === 0) {
-      // Initialize with empty cache if no playlists yet
-      searchService.updateCache([], []);
-      return;
-    }
-
-    const allTracks: Track[] = [];
-    const seenTrackIds = new Set<string>();
-
-    // Extract all unique tracks from all playlists
-    playlists.forEach(playlist => {
-      if (playlist.tracks && Array.isArray(playlist.tracks)) {
-        playlist.tracks.forEach(track => {
-          if (!seenTrackIds.has(track.id)) {
-            seenTrackIds.add(track.id);
-            allTracks.push(track);
-          }
-        });
+    const loadTracksForSearch = async () => {
+      if (!playlists || playlists.length === 0) {
+        searchService.updateCache([], []);
+        return;
       }
-    });
 
-    searchService.updateCache(allTracks, playlists);
-    console.log(`Search cache updated: ${allTracks.length} tracks, ${playlists.length} playlists`);
+      const allTracks: Track[] = [];
+      const seenTrackIds = new Set<string>();
+
+      // Load full playlist details to get tracks
+      for (const playlist of playlists) {
+        try {
+          const fullPlaylist = await playlistService.getPlaylistById(playlist.id);
+          if (fullPlaylist.tracks && Array.isArray(fullPlaylist.tracks)) {
+            fullPlaylist.tracks.forEach(track => {
+              if (!seenTrackIds.has(track.id)) {
+                seenTrackIds.add(track.id);
+                allTracks.push(track);
+              }
+            });
+          }
+        } catch (err) {
+          console.warn(`Failed to load tracks for playlist ${playlist.name}`);
+        }
+      }
+
+      searchService.updateCache(allTracks, playlists);
+      console.log(`✅ Search cache: ${allTracks.length} tracks, ${playlists.length} playlists`);
+    };
+
+    loadTracksForSearch();
   }, [playlists]);
 
   const handleTrackPress = async (track: Track) => {
