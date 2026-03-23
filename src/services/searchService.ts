@@ -126,8 +126,8 @@ class SearchService {
   private searchTracksInCache(query: string): Track[] {
     return this.tracksCache
       .filter(track => {
-        const titleMatch = track.title.toLowerCase().includes(query);
-        const artistMatch = track.artist.toLowerCase().includes(query);
+        const titleMatch = (track.title || '').toLowerCase().includes(query);
+        const artistMatch = (track.artist || '').toLowerCase().includes(query);
         return titleMatch || artistMatch;
       })
       .slice(0, 50); // Limit to 50 results
@@ -136,7 +136,7 @@ class SearchService {
   private searchPlaylistsInCache(query: string): Playlist[] {
     return this.playlistsCache
       .filter(playlist => {
-        const nameMatch = playlist.name.toLowerCase().includes(query);
+        const nameMatch = (playlist.name || '').toLowerCase().includes(query);
         return nameMatch;
       })
       .slice(0, 20); // Limit to 20 results

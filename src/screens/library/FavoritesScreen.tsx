@@ -20,6 +20,7 @@ export function FavoritesScreen() {
   const { currentTrack } = usePlayback();
 
   const handleTrackPress = async (track: Track) => {
+    console.log('🔵 FavoritesScreen: Track tapped:', track.title);
     try {
       // Create proper Track objects from FavoriteTracks
       const tracks: Track[] = favoriteTracks.map(fav => {
@@ -37,7 +38,9 @@ export function FavoritesScreen() {
       });
       
       console.log(`🎵 Playing from favorites: ${track.title}, queue: ${tracks.length} tracks`);
+      console.log('Track object:', JSON.stringify(track, null, 2));
       await playTrack(track, tracks);
+      console.log('✅ playTrack completed');
     } catch (error) {
       console.error('❌ Failed to play track:', error);
     }
