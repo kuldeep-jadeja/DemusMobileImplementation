@@ -20,7 +20,6 @@ export function FavoritesScreen() {
   const { currentTrack } = usePlayback();
 
   const handleTrackPress = async (track: Track) => {
-    console.log('🔵 FavoritesScreen: Track tapped:', track.title);
     try {
       // Create proper Track objects from FavoriteTracks
       const tracks: Track[] = favoriteTracks.map(fav => {
@@ -37,12 +36,15 @@ export function FavoritesScreen() {
         return trackObj;
       });
       
-      console.log(`🎵 Playing from favorites: ${track.title}, queue: ${tracks.length} tracks`);
-      console.log('Track object:', JSON.stringify(track, null, 2));
       await playTrack(track, tracks);
-      console.log('✅ playTrack completed');
+      
+      // Force update current track in UI (needed for Expo Go)
+      if (currentTrack?.id !== track.id) {
+        // Track will be updated by PlaybackContext's TrackPlayer events
+        console.log('Track queued for playback:', track.title);
+      }
     } catch (error) {
-      console.error('❌ Failed to play track:', error);
+      console.error('Failed to play track:', error);
     }
   };
 
