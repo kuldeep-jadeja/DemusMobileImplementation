@@ -31,31 +31,77 @@ export function SearchScreen() {
     clearQuery,
   } = useSearch();
 
-  const { currentTrack } = usePlayback();
+  const { currentTrack, setCurrentTrack } = usePlayback();
 
-  // Use favorites as search source since they're already loaded with full track data
+  // Load all tracks from playlists and favorites for search
   useEffect(() => {
-    if (favoriteTracks && favoriteTracks.length > 0) {
-      const tracks: Track[] = favoriteTracks.map(fav => ({
-        id: fav.id,
-        title: fav.title,
-        artist: fav.artist,
-        albumArt: fav.albumArt || '',
-        duration: fav.duration || 0,
-        spotifyId: fav.spotifyId,
-        youtubeVideoId: fav.youtubeVideoId,
-        album: fav.album,
-      }));
-      searchService.updateCache(tracks, []);
-    }
-  }, [favoriteTracks]);
+    const loadAllTracks = async () => {
+      const allTracks: Track[] = [];
+      const tracksMap = new Map<string, Track>(); // To avoid duplicates
+
+      // Add favorites first
+      if (favoriteTracks && favoriteTracks.length > 0) {
+        favoriteTracks.forEach(fav => {
+          const track: Track = {
+            id: fav.id,
+            title: fav.title,
+            artist: fav.artist,
+            albumArt: fav.albumArt || '',
+            duration: fav.duration || 0,
+            spotifyId: fav.spotifyId,
+            youtubeVideoId: fav.youtubeVideoId,
+            album: fav.album,
+          };
+          tracksMap.set(track.id, track);
+        });
+      }
+
+      // Add tracks from all playlists
+      if (playlists && playlists.length > 0) {
+        playlists.forEach(playlist => {
+          if (playlist.tracks && Array.isArray(playlist.tracks)) {
+            playlist.tracks.forEach(track => {
+              // Only add if not already in map (favorites take priority)
+              if (!tracksMap.has(track.id)) {
+                tracksMap.set(track.id, track);
+              }
+            });
+          }
+        });
+      }
+
+      // Convert map to array
+      const tracks = Array.from(tracksMap.values());
+      
+      console.log('[SearchScreen] Loaded tracks for search:', {
+        total: tracks.length,
+        fromFavorites: favoriteTracks?.length || 0,
+        fromPlaylists: playlists?.length || 0,
+      });
+
+      searchService.updateCache(tracks, playlists || []);
+    };
+
+    loadAllTracks();
+  }, [favoriteTracks, playlists]);
 
   const handleTrackPress = async (track: Track) => {
     try {
+      console.log('[SearchScreen] Playing track:', track.title);
       Keyboard.dismiss();
       await playTrack(track, results.tracks);
+      
+      // For Expo Go: manually update current track since TrackPlayer events don't fire
+      setTimeout(() => {
+        if (currentTrack?.id !== track.id) {
+          console.log('[SearchScreen] Manually setting current track for Expo Go');
+          setCurrentTrack(track);
+        }
+      }, 100);
+      
+      console.log('[SearchScreen] Track playback initiated');
     } catch (error) {
-      console.error('Failed to play track:', error);
+      console.error('[SearchScreen] Failed to play track:', error);
     }
   };
 

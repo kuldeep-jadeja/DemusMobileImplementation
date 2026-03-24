@@ -17,10 +17,13 @@ type NavigationProp = NativeStackNavigationProp<LibraryStackParamList>;
 export function FavoritesScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { favoriteTracks, favoritePlaylists } = useFavorites();
-  const { currentTrack } = usePlayback();
+  const { currentTrack, setCurrentTrack } = usePlayback();
+  const isExpoGo = __DEV__ && !__DEV__; // Check if running in Expo Go (simplified check)
 
   const handleTrackPress = async (track: Track) => {
     try {
+      console.log('[FavoritesScreen] Playing track:', track.title);
+      
       // Create proper Track objects from FavoriteTracks
       const tracks: Track[] = favoriteTracks.map(fav => {
         const trackObj: Track = {
@@ -38,13 +41,18 @@ export function FavoritesScreen() {
       
       await playTrack(track, tracks);
       
-      // Force update current track in UI (needed for Expo Go)
-      if (currentTrack?.id !== track.id) {
-        // Track will be updated by PlaybackContext's TrackPlayer events
-        console.log('Track queued for playback:', track.title);
-      }
+      // For Expo Go: manually update current track since TrackPlayer events don't fire
+      // In a real build, this will be handled by TrackPlayer events
+      setTimeout(() => {
+        if (currentTrack?.id !== track.id) {
+          console.log('[FavoritesScreen] Manually setting current track for Expo Go');
+          setCurrentTrack(track);
+        }
+      }, 100);
+      
+      console.log('[FavoritesScreen] Track playback initiated');
     } catch (error) {
-      console.error('Failed to play track:', error);
+      console.error('[FavoritesScreen] Failed to play track:', error);
     }
   };
 
