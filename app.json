@@ -4,7 +4,7 @@
     "slug": "demus-mobile",
     "scheme": "demus",
     "version": "1.0.0",
-    "sdkVersion": "50.0.0",
+    "sdkVersion": "55.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -14,7 +14,8 @@
       "backgroundColor": "#ffffff"
     },
     "plugins": [
-      "expo-dev-client"
+      "expo-dev-client",
+      "expo-secure-store"
     ],
     "ios": {
       "bundleIdentifier": "com.demus.music",
