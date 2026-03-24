@@ -9,6 +9,7 @@ import { SearchResults } from '@/components/search/SearchResults';
 import { useSearch } from '@/hooks/useSearch';
 import { usePlayback } from '@/contexts/PlaybackContext';
 import { useFavorites } from '@/contexts/FavoritesContext';
+import { useLibrary } from '@/contexts/LibraryContext';
 import { searchService } from '@/services/searchService';
 import { playTrack } from '@/services/audio/QueueService';
 import { Track, Playlist } from '@/types/audio';
@@ -20,6 +21,7 @@ type NavigationProp = NativeStackNavigationProp<LibraryStackParamList>;
 export function SearchScreen() {
   const navigation = useNavigation<NavigationProp>();
   const { favoriteTracks } = useFavorites();
+  const { playlists } = useLibrary();
   const {
     query,
     setQuery,

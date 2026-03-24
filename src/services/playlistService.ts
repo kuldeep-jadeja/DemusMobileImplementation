@@ -177,15 +177,23 @@ function mapApiTrackToApiTrack(apiTrack: any): ApiTrack {
   };
 }
 
+import { getAudioUrlSafe } from '../api/audio';
+
 /**
- * Converts ApiTrack to playback Track format
+ * Converts ApiTrack to playback Track format with real audio URL
  */
-export function convertApiTrackToTrack(apiTrack: ApiTrack): any {
+export async function convertApiTrackToTrack(apiTrack: ApiTrack): Promise<any> {
+  // Fetch real audio stream URL from backend
+  let audioUrl = '';
+  if (apiTrack.youtubeVideoId) {
+    const fetchedUrl = await getAudioUrlSafe(apiTrack.youtubeVideoId);
+    audioUrl = fetchedUrl || '';
+  }
+
   return {
     id: apiTrack.id,
-    url: apiTrack.youtubeVideoId 
-      ? `https://www.youtube.com/watch?v=${apiTrack.youtubeVideoId}`
-      : '',
+    url: audioUrl, // Real stream URL from youtubei.js
+    youtubeVideoId: apiTrack.youtubeVideoId, // Keep for reference
     title: apiTrack.name,
     artist: apiTrack.artists.join(', '),
     album: apiTrack.album,

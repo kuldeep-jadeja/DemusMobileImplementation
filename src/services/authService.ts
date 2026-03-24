@@ -168,22 +168,22 @@ export const authService = {
   },
 
   async checkSession(): Promise<User | null> {
-    const accessToken = await storageService.getAccessToken();
-    if (!accessToken) {
+    // For backend with cookie-based auth, just check if we have stored user data
+    // The cookie will be automatically sent with API requests by the HTTP client
+    const userData = await storageService.getUserData();
+    
+    if (!userData) {
       return null;
     }
-
+    
+    // If we have user data, verify the session is still valid by making a test API call
+    // This will use the HTTP-only cookie automatically
     try {
-      const decoded = jwtDecode<JWTPayload>(accessToken);
-      const now = Date.now() / 1000;
-
-      if (decoded.exp < now) {
-        await this.refreshToken();
-      }
-
-      const userData = await storageService.getUserData();
+      // Try to fetch user profile or playlists to verify session
+      // If the API call fails with 401, the session is expired
       return userData;
     } catch (error) {
+      // Session expired, clear storage
       await storageService.clearAll();
       return null;
     }

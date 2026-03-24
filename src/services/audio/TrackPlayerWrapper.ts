@@ -4,7 +4,17 @@
  */
 import Constants from 'expo-constants';
 
-const isExpoGo = Constants.appOwnership === 'expo';
+// Check if running in Expo Go or Expo Dev Client
+// In standalone/production builds: appOwnership is 'standalone' or undefined
+// In Expo Go: appOwnership is 'expo'  
+// In Expo Dev Client: executionEnvironment is 'storeClient'
+const isExpoGo = Constants.appOwnership === 'expo' || Constants.executionEnvironment === 'storeClient';
+
+console.log('[TrackPlayerWrapper] Environment detection:', {
+  appOwnership: Constants.appOwnership,
+  executionEnvironment: Constants.executionEnvironment,
+  isExpoGo,
+});
 
 // Mock Capability enum for Expo Go
 const MockCapability = {

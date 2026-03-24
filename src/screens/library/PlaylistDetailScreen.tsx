@@ -60,23 +60,34 @@ export default function PlaylistDetailScreen({ route, navigation }: PlaylistDeta
     }
 
     try {
-      // Convert API tracks to playback tracks
-      const playbackTracks: Track[] = selectedPlaylist.tracks
-        .filter(t => t.youtubeVideoId) // Only include matched tracks
-        .map(convertApiTrackToTrack);
-
-      if (playbackTracks.length === 0) {
+      // Convert API tracks to playback tracks (now async)
+      const matchedTracks = selectedPlaylist.tracks.filter(t => t.youtubeVideoId);
+      
+      if (matchedTracks.length === 0) {
         Alert.alert('No Matched Tracks', 'No tracks have been matched with YouTube yet. Wait for import to complete.');
         return;
       }
 
-      await QueueService.setQueue(playbackTracks);
+      // Convert tracks with real audio URLs (parallel fetching)
+      const playbackTracks: Track[] = await Promise.all(
+        matchedTracks.map(t => convertApiTrackToTrack(t))
+      );
+
+      // Filter out tracks that failed to get audio URLs
+      const validTracks = playbackTracks.filter(t => t.url);
+      
+      if (validTracks.length === 0) {
+        Alert.alert('Error', 'Failed to get audio URLs for tracks. Please try again.');
+        return;
+      }
+
+      await QueueService.setQueue(validTracks);
       
       // Manually set current track for MiniPlayer (Expo Go compatibility)
-      setCurrentTrack(playbackTracks[0]);
+      setCurrentTrack(validTracks[0]);
       
-      Alert.alert('Playing', `Started playing ${playbackTracks.length} ${playbackTracks.length === 1 ? 'track' : 'tracks'}`);
-      console.log('✅ Playing all tracks:', playbackTracks.length);
+      Alert.alert('Playing', `Started playing ${validTracks.length} ${validTracks.length === 1 ? 'track' : 'tracks'}`);
+      console.log('✅ Playing all tracks:', validTracks.length);
     } catch (error) {
       console.error('Failed to play all:', error);
       Alert.alert('Error', 'Failed to start playback');
@@ -90,19 +101,23 @@ export default function PlaylistDetailScreen({ route, navigation }: PlaylistDeta
     }
 
     try {
-      // Convert API tracks to playback tracks
-      const playbackTracks: Track[] = selectedPlaylist.tracks
-        .filter(t => t.youtubeVideoId) // Only include matched tracks
-        .map(convertApiTrackToTrack);
-
-      if (playbackTracks.length === 0) {
+      // Convert API tracks to playback tracks (now async)
+      const matchedTracks = selectedPlaylist.tracks.filter(t => t.youtubeVideoId);
+      
+      if (matchedTracks.length === 0) {
         Alert.alert('No Matched Tracks', 'No tracks have been matched with YouTube yet. Wait for import to complete.');
         return;
       }
 
-      await QueueService.addTracks(playbackTracks);
-      Alert.alert('Added to Queue', `${playbackTracks.length} ${playbackTracks.length === 1 ? 'track' : 'tracks'} added to queue`);
-      console.log('✅ Added to queue:', playbackTracks.length, 'tracks');
+      const playbackTracks: Track[] = await Promise.all(
+        matchedTracks.map(t => convertApiTrackToTrack(t))
+      );
+      
+      const validTracks = playbackTracks.filter(t => t.url);
+
+      await QueueService.addTracks(validTracks);
+      Alert.alert('Added to Queue', `${validTracks.length} ${validTracks.length === 1 ? 'track' : 'tracks'} added to queue`);
+      console.log('✅ Added to queue:', validTracks.length, 'tracks');
     } catch (error) {
       console.error('Failed to add to queue:', error);
       Alert.alert('Error', 'Failed to add to queue');
@@ -120,15 +135,22 @@ export default function PlaylistDetailScreen({ route, navigation }: PlaylistDeta
     }
 
     try {
-      // Convert all tracks to playback format
-      const allPlaybackTracks: Track[] = selectedPlaylist.tracks
-        .filter(t => t.youtubeVideoId)
-        .map(convertApiTrackToTrack);
-
-      const currentTrack = convertApiTrackToTrack(track);
+      // Convert all matched tracks to playback format (with real audio URLs)
+      const matchedTracks = selectedPlaylist.tracks.filter(t => t.youtubeVideoId);
+      const allPlaybackTracks: Track[] = await Promise.all(
+        matchedTracks.map(t => convertApiTrackToTrack(t))
+      );
+      
+      const validTracks = allPlaybackTracks.filter(t => t.url);
+      const currentTrack = await convertApiTrackToTrack(track);
+      
+      if (!currentTrack.url) {
+        Alert.alert('Error', 'Failed to get audio URL for this track');
+        return;
+      }
 
       // Play this track with the playlist as context
-      await QueueService.playTrack(currentTrack, allPlaybackTracks);
+      await QueueService.playTrack(currentTrack, validTracks);
       
       // Manually set current track for MiniPlayer (Expo Go compatibility)
       setCurrentTrack(currentTrack);

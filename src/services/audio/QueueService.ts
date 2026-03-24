@@ -84,6 +84,13 @@ export async function addTracks(tracks: Track[]): Promise<void> {
  */
 export async function playTrack(track: Track, contextQueue?: Track[]): Promise<void> {
   try {
+    console.log('[QueueService] playTrack called:', {
+      trackTitle: track.title,
+      trackId: track.id,
+      contextQueueLength: contextQueue?.length,
+      isExpoGo,
+    });
+
     if (contextQueue && contextQueue.length > 0) {
       // Find the track index in context queue
       const trackIndex = contextQueue.findIndex(t => t.id === track.id);
@@ -93,13 +100,19 @@ export async function playTrack(track: Track, contextQueue?: Track[]): Promise<v
         currentQueue = shuffleEnabled ? shuffleArray([...contextQueue]) : [...contextQueue];
         
         if (!isExpoGo) {
+          console.log('[QueueService] Resetting TrackPlayer and adding queue...');
           await TrackPlayer.reset();
           await TrackPlayer.add(currentQueue);
           
           // Find track position after shuffle
           const playIndex = currentQueue.findIndex(t => t.id === track.id);
+          console.log('[QueueService] Skipping to index:', playIndex);
           await TrackPlayer.skip(playIndex >= 0 ? playIndex : 0);
+          console.log('[QueueService] Calling play()...');
           await TrackPlayer.play();
+          console.log('✅ [QueueService] Play command sent successfully');
+        } else {
+          console.log('⚠️ [QueueService] Expo Go mode - skipping real playback');
         }
       } else {
         // Track not in context, just add it and play
@@ -111,16 +124,21 @@ export async function playTrack(track: Track, contextQueue?: Track[]): Promise<v
       currentQueue = [track];
       
       if (!isExpoGo) {
+        console.log('[QueueService] Single track playback - resetting...');
         await TrackPlayer.reset();
         await TrackPlayer.add(track);
         await TrackPlayer.skip(0);
+        console.log('[QueueService] Calling play()...');
         await TrackPlayer.play();
+        console.log('✅ [QueueService] Play command sent successfully');
+      } else {
+        console.log('⚠️ [QueueService] Expo Go mode - skipping real playback');
       }
     }
     
     await saveQueueToStorage();
   } catch (error) {
-    console.error('Play track failed:', error);
+    console.error('❌ [QueueService] Play track failed:', error);
     throw error;
   }
 }

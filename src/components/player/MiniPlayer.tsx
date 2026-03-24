@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { usePlayback } from '@/contexts/PlaybackContext';
@@ -11,6 +12,7 @@ export function MiniPlayer() {
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
   const isDark = colorScheme === 'dark';
+  const insets = useSafeAreaInsets();
 
   if (!currentTrack) {
     return null; // Don't show mini-player when no track
@@ -41,7 +43,11 @@ export function MiniPlayer() {
 
   return (
     <TouchableOpacity
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[
+        styles.container,
+        isDark && styles.containerDark,
+        { paddingBottom: insets.bottom + 8, marginBottom: 60 + insets.bottom }
+      ]}
       onPress={openPlayer}
       activeOpacity={0.8}
     >
