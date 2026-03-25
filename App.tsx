@@ -7,6 +7,7 @@ import { HomeProvider } from './src/contexts/HomeContext';
 import { FavoritesProvider } from './src/contexts/FavoritesContext';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { setupTrackPlayer } from './src/services/audio/TrackPlayerService';
+import { clearExpiredAudioUrls } from './src/api/audio';
 
 export default function App() {
   const [isPlayerReady, setIsPlayerReady] = useState(false);
@@ -24,6 +25,13 @@ export default function App() {
     }
 
     initPlayer();
+
+    // Periodically clear expired audio URLs from cache (every 30 minutes)
+    const cleanupInterval = setInterval(() => {
+      clearExpiredAudioUrls();
+    }, 30 * 60 * 1000);
+
+    return () => clearInterval(cleanupInterval);
   }, []);
 
   // Show loading screen while initializing audio player
