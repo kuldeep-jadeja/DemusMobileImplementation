@@ -102,8 +102,16 @@ export function SearchScreen() {
       }, 100);
       
       console.log('[SearchScreen] Track playback initiated');
-    } catch (error) {
+    } catch (error: any) {
       console.error('[SearchScreen] Failed to play track:', error);
+      
+      // Show user-friendly error message
+      const errorMessage = error?.message || 'Unable to play this track. Please try again.';
+      Alert.alert(
+        'Playback Error',
+        errorMessage,
+        [{ text: 'OK' }]
+      );
     }
   };
 

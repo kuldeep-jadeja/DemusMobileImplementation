@@ -87,17 +87,30 @@ export async function playTrack(track: Track, contextQueue?: Track[]): Promise<v
     console.log('[QueueService] playTrack called:', {
       trackTitle: track.title,
       trackId: track.id,
+      hasUrl: !!track.url,
       contextQueueLength: contextQueue?.length,
       isExpoGo,
     });
+
+    // Validate track has audio URL
+    if (!track.url || track.url.trim() === '') {
+      console.error('[QueueService] ❌ Track has no audio URL:', track.title);
+      throw new Error(`Failed to get audio URL for this track. The song might not be available or the backend server might be down. Try again later.`);
+    }
 
     if (contextQueue && contextQueue.length > 0) {
       // Find the track index in context queue
       const trackIndex = contextQueue.findIndex(t => t.id === track.id);
       if (trackIndex >= 0) {
+        // Filter out tracks without URLs
+        const validTracks = contextQueue.filter(t => t.url && t.url.trim() !== '');
+        if (validTracks.length !== contextQueue.length) {
+          console.warn(`[QueueService] Filtered out ${contextQueue.length - validTracks.length} tracks without audio URLs`);
+        }
+        
         // Set the entire queue and play from the track's position
-        originalQueue = [...contextQueue];
-        currentQueue = shuffleEnabled ? shuffleArray([...contextQueue]) : [...contextQueue];
+        originalQueue = [...validTracks];
+        currentQueue = shuffleEnabled ? shuffleArray([...validTracks]) : [...validTracks];
         
         if (!isExpoGo) {
           console.log('[QueueService] Resetting TrackPlayer and adding queue...');

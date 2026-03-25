@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Text, View, ActivityIndicator, StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from './src/context/AuthContext';
 import { PlaybackProvider } from './src/contexts/PlaybackContext';
 import { LibraryProvider } from './src/contexts/LibraryContext';
@@ -45,17 +46,19 @@ export default function App() {
   }
 
   return (
-    <PlaybackProvider>
-      <AuthProvider>
-        <LibraryProvider>
-          <FavoritesProvider>
-            <HomeProvider>
-              <AppNavigator />
-            </HomeProvider>
-          </FavoritesProvider>
-        </LibraryProvider>
-      </AuthProvider>
-    </PlaybackProvider>
+    <SafeAreaProvider>
+      <PlaybackProvider>
+        <AuthProvider>
+          <LibraryProvider>
+            <FavoritesProvider>
+              <HomeProvider>
+                <AppNavigator />
+              </HomeProvider>
+            </FavoritesProvider>
+          </LibraryProvider>
+        </AuthProvider>
+      </PlaybackProvider>
+    </SafeAreaProvider>
   );
 }
 

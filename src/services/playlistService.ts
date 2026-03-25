@@ -186,8 +186,17 @@ export async function convertApiTrackToTrack(apiTrack: ApiTrack): Promise<any> {
   // Fetch real audio stream URL from backend
   let audioUrl = '';
   if (apiTrack.youtubeVideoId) {
+    console.log(`[playlistService] Fetching audio URL for: ${apiTrack.name}`);
     const fetchedUrl = await getAudioUrlSafe(apiTrack.youtubeVideoId);
-    audioUrl = fetchedUrl || '';
+    
+    if (!fetchedUrl) {
+      console.error(`[playlistService] ❌ Failed to get audio URL for: ${apiTrack.name} (${apiTrack.youtubeVideoId})`);
+      // Return track without URL - player will show error
+      audioUrl = '';
+    } else {
+      console.log(`[playlistService] ✅ Got audio URL for: ${apiTrack.name}`);
+      audioUrl = fetchedUrl;
+    }
   }
 
   return {
